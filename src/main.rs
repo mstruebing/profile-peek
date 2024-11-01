@@ -53,10 +53,7 @@ fn rocket() -> _ {
             .mount("/", FileServer::from("/www/public")),
         Err(_) => rocket::build()
             .mount("/player", routes![player_route])
-            .mount(
-                "/",
-                FileServer::from(relative!("frontend/csportal-player-finder/dist")),
-            ),
+            .mount("/", FileServer::from(relative!("frontend/dist"))),
     }
 }
 
