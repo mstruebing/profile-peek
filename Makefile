@@ -3,6 +3,9 @@ build: build-frontend build-backend
 build-frontend: 
 	npm run build --prefix frontend
 
+watch-frontend: build-frontend
+	while inotifywait -r frontend/src -e modify; do { make build-frontend; }; done
+
 build-backend:
 	cargo build
 
