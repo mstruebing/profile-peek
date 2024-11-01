@@ -6,7 +6,8 @@
     "perl@latest",
     "nodejs@latest",
     "elmPackages.elm@latest",
-    "elmPackages.elm-format@latest"
+    "elmPackages.elm-format@latest",
+    "inotify-tools@latest"
   ],
   "shell": {
     "init_hook": [
