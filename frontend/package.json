@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "elm-land server",
-    "build": "elm-land build",
+    "build": "elm-land build && cp -r assets dist",
     "format": "elm-format --yes src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
