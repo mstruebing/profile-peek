@@ -21,3 +21,6 @@ format:
 
 test:
 	echo TODO
+
+request:
+	curl 'http://0.0.0.0:8000/player/https%3A%2F%2Fsteamcommunity.com%2Fid%2Finsi--'

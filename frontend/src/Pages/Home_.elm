@@ -4,7 +4,7 @@ import Html exposing (Html)
 import Html.Attributes exposing (autofocus, class, disabled, href, placeholder, target)
 import Html.Events exposing (onInput, onSubmit)
 import Http exposing (Error(..))
-import Json.Decode exposing (field, string)
+import Json.Decode exposing (Decoder, field)
 import Page exposing (Page)
 import Platform.Cmd as Cmd
 import RemoteData exposing (RemoteData)
@@ -12,18 +12,14 @@ import Url exposing (percentEncode)
 import View exposing (View)
 
 
+type alias Response =
+    { steam_id : String
+    , sites : List Site
+    }
+
+
 type alias Site =
-    { label : String, url : String }
-
-
-sites : List Site
-sites =
-    [ { label = "steam profile", url = "https://steamcommunity.com/profiles/" }
-    , { label = "leetify", url = "https://leetify.com/app/profile/" }
-    , { label = "faceitfinder", url = "https://faceitfinder.com/profile/" }
-    , { label = "csstats", url = "https://csstats.gg/player/" }
-    , { label = "csbackpack", url = "https://www.csbackpack.net/inventory/" }
-    ]
+    { title : String, url : String }
 
 
 page : Page Model Msg
@@ -42,13 +38,13 @@ page =
 
 type alias Model =
     { input : String
-    , steamId : RemoteData Http.Error String
+    , response : RemoteData Http.Error Response
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { input = "", steamId = RemoteData.NotAsked }
+    ( { input = "", response = RemoteData.NotAsked }
     , Cmd.none
     )
 
@@ -61,7 +57,7 @@ type Msg
     = NoOp
     | UpdateInput String
     | Submit
-    | GotResult (Result Http.Error String)
+    | GotResult (Result Http.Error Response)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -76,13 +72,13 @@ update msg model =
             ( { model | input = input }, Cmd.none )
 
         Submit ->
-            ( { model | steamId = RemoteData.Loading }, Http.get { url = "/player/" ++ percentEncode model.input, expect = Http.expectJson GotResult (field "steam_id" string) } )
+            ( { model | response = RemoteData.Loading }, Http.get { url = "/player/" ++ percentEncode model.input, expect = Http.expectJson GotResult responseDecoder } )
 
-        GotResult (Ok content) ->
-            ( { model | steamId = RemoteData.Success content }, Cmd.none )
+        GotResult (Ok response) ->
+            ( { model | response = RemoteData.Success response }, Cmd.none )
 
         GotResult (Err error) ->
-            ( { model | steamId = RemoteData.Failure error }, Cmd.none )
+            ( { model | response = RemoteData.Failure error }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -101,23 +97,23 @@ view model =
         [ column [ class "gap" ]
             [ Html.form [ onSubmit Submit ]
                 [ Html.input
-                    [ disabled <| model.steamId == RemoteData.Loading
+                    [ disabled <| model.response == RemoteData.Loading
                     , placeholder "steam link"
                     , autofocus True
                     , onInput <| UpdateInput
                     ]
                     []
-                , row [] [ Html.button [ disabled <| model.steamId == RemoteData.Loading ] [ Html.text "search" ] ]
+                , row [] [ Html.button [ disabled <| model.response == RemoteData.Loading ] [ Html.text "search" ] ]
                 ]
-            , case model.steamId of
+            , case model.response of
                 RemoteData.NotAsked ->
                     Html.text ""
 
                 RemoteData.Loading ->
                     Html.div [ class "loading" ] [ Html.text "loading..." ]
 
-                RemoteData.Success steamId ->
-                    Html.div [] [ links steamId ]
+                RemoteData.Success response ->
+                    Html.div [] [ links response.sites ]
 
                 RemoteData.Failure error ->
                     column [ class "error" ]
@@ -129,14 +125,14 @@ view model =
     }
 
 
-links : String -> Html Msg
-links steamId =
-    row [ class "link__row" ] <| List.map (link steamId) sites
+links : List Site -> Html Msg
+links sites =
+    row [ class "link__row" ] <| List.map link sites
 
 
-link : String -> { label : String, url : String } -> Html Msg
-link steamId { label, url } =
-    column [ class "link" ] [ Html.a [ target "blank", href <| url ++ steamId ] [ Html.text label ] ]
+link : Site -> Html Msg
+link { title, url } =
+    column [ class "link" ] [ Html.a [ target "blank", href url ] [ Html.text title ] ]
 
 
 row : List (Html.Attribute msg) -> List (Html msg) -> Html msg
@@ -174,3 +170,22 @@ errorToString err =
 
         BadUrl url ->
             "Malformed url: " ++ url
+
+
+responseDecoder : Decoder Response
+responseDecoder =
+    Json.Decode.map2 Response
+        (field "steam_id" Json.Decode.string)
+        sitesDecoder
+
+
+sitesDecoder : Decoder (List Site)
+sitesDecoder =
+    field "sites" (Json.Decode.list siteDecoder)
+
+
+siteDecoder : Decoder Site
+siteDecoder =
+    Json.Decode.map2 Site
+        (field "title" Json.Decode.string)
+        (field "url" Json.Decode.string)
