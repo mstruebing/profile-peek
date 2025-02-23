@@ -8,3 +8,5 @@ node_modules
 *.pem
 
 !.nvim.lua
+extension/elm-stuff
+extension/dist

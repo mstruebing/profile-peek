@@ -39,12 +39,12 @@ async fn player_route(url: &str) -> String {
                             title: "Leetify".to_string(),
                         },
                         Site {
-                            url: format!("https://faceitfinder.com/profile/{}", steam_id),
-                            title: "Faceitfinder".to_string(),
-                        },
-                        Site {
                             url: format!("https://csstats.gg/player/{}", steam_id),
                             title: "csstats".to_string(),
+                        },
+                        Site {
+                            url: format!("https://faceitfinder.com/profile/{}", steam_id),
+                            title: "Faceitfinder".to_string(),
                         },
                         Site {
                             url: format!("https://www.skinpock.com/inventory/{}", steam_id),
