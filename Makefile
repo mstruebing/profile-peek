@@ -3,6 +3,15 @@ build: build-frontend build-backend
 build-frontend: 
 	npm run build --prefix frontend
 
+build-extension:
+	cd extension && \
+		rm -rf dist && \
+		elm make src/Main.elm --output=dist/elm.js && \
+		cp manifest.json dist/manifest.json && \
+		cp background.js dist/background.js && \
+		cp content-script.js dist/content-script.js
+
+
 watch-frontend: build-frontend
 	while inotifywait -r frontend/src frontend/assets -e modify; do { make build-frontend; }; done
 
