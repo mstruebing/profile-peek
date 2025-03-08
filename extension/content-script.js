@@ -13,11 +13,22 @@ chrome.runtime.sendMessage({ type: 'INJECT_ELM' }, (_response) => {
     // Initialize Elm app once script is injected
     const Elm = window.Elm;
     if (Elm && Elm.Main) {
-        Elm.Main.init({
+        const app = Elm.Main.init({
             node: document.getElementById('elm-app-container'),
             flags: {
                 url: window.location.href,
             }
+        });
+
+        app.ports.requestLocalStorageItem.subscribe((key) => {
+            const value = localStorage.getItem(key);
+            if (value) {
+                app.ports.receiveLocalStorageItem.send(value);
+            }
+        })
+
+        app.ports.setLocalStorageItem.subscribe(([key, value]) => {
+            localStorage.setItem(key, JSON.stringify(value));
         });
     } else {
         console.error('Elm.Main not found');
