@@ -44,9 +44,12 @@ fn rocket() -> _ {
 
 #[get("/<url>")]
 async fn player_route(url: &str) -> String {
-    match redis::get(url) {
-        Some(steam_id) => handle_cached_player(&steam_id, url),
-        None => handle_new_player(url).await,
+    match steam::get_id_from_url(url) {
+        Some(id) => match redis::get(&id) {
+            Some(steam_id) => handle_cached_player(&steam_id, url),
+            None => handle_new_player(&id, url).await,
+        },
+        None => format!("Could not extract steam id"),
     }
 }
 
@@ -61,15 +64,15 @@ fn handle_cached_player(steam_id: &str, url: &str) -> String {
     }
 }
 
-async fn handle_new_player(url: &str) -> String {
+async fn handle_new_player(id: &str, url: &str) -> String {
     match reqwest::get(url).await.unwrap().text().await {
-        Ok(resp) => match steam::get_id(&resp) {
+        Ok(resp) => match steam::get_steam_id_from_html(&resp) {
             Some(steam_id) => {
                 let player = create_player(&steam_id, url);
                 match serde_json::to_string(&player) {
                     Ok(json) => {
-                        redis::set(url, &steam_id);
-                        redis::expire(url, 60 * 60 * 24);
+                        redis::set(id, &steam_id);
+                        redis::expire(id, 60 * 60 * 24);
                         format!("{}", json)
                     }
                     Err(e) => {
