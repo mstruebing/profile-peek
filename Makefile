@@ -19,7 +19,7 @@ build-backend:
 	cargo build
 
 start-server:
-	ROCKET_ADDRESS=0.0.0.0 ROCKET_PORT=8000	cargo run
+	REDIS_HOSTNAME=127.0.0.1 ROCKET_ADDRESS=0.0.0.0 ROCKET_PORT=8000 cargo run
 
 docker:
 	docker build -t mstruebing/csportal-player-finder .
@@ -33,3 +33,15 @@ test:
 
 request:
 	curl 'http://0.0.0.0:8000/player/https%3A%2F%2Fsteamcommunity.com%2Fid%2Finsi--'
+
+redis-server:
+	docker run -it --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+
+redis-start:
+	docker start redis-stack
+
+redis-stop:
+	docker stop redis-stack
+
+redis-client: 
+	docker exec -it redis-stack redis-cli

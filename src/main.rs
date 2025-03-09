@@ -6,6 +6,7 @@ use serde::Serialize;
 use std::env;
 
 mod cors;
+mod redis;
 mod steam;
 
 #[derive(Serialize)]
@@ -22,55 +23,66 @@ struct Site {
 
 #[get("/<url>")]
 async fn player_route(url: &str) -> String {
-    let resp = reqwest::get(url).await.unwrap().text().await;
+    let cache_result = redis::get(url);
 
-    match resp {
-        Ok(resp) => match steam::get_id(&resp) {
-            Some(steam_id) => {
-                let player = Player {
-                    steam_id: steam_id.clone().to_string(),
-                    sites: vec![
-                        Site {
-                            url: url.to_string(),
-                            title: "Steam".to_string(),
-                        },
-                        Site {
-                            url: format!("https://leetify.com/app/profile/{}", steam_id),
-                            title: "Leetify".to_string(),
-                        },
-                        Site {
-                            url: format!("https://csstats.gg/player/{}", steam_id),
-                            title: "csstats".to_string(),
-                        },
-                        Site {
-                            url: format!("https://faceitfinder.com/profile/{}", steam_id),
-                            title: "Faceitfinder".to_string(),
-                        },
-                        Site {
-                            url: format!("https://www.skinpock.com/inventory/{}", steam_id),
-                            title: "skinpock".to_string(),
-                        },
-                    ],
-                };
+    match cache_result {
+        Some(cache) => {
+            return cache;
+        }
+        None => {
+            let resp = reqwest::get(url).await.unwrap().text().await;
 
-                let json = serde_json::to_string(&player);
-                match json {
-                    Ok(json) => {
-                        format!("{}", json)
+            match resp {
+                Ok(resp) => match steam::get_id(&resp) {
+                    Some(steam_id) => {
+                        let player = Player {
+                            steam_id: steam_id.clone().to_string(),
+                            sites: vec![
+                                Site {
+                                    url: url.to_string(),
+                                    title: "Steam".to_string(),
+                                },
+                                Site {
+                                    url: format!("https://leetify.com/app/profile/{}", steam_id),
+                                    title: "Leetify".to_string(),
+                                },
+                                Site {
+                                    url: format!("https://csstats.gg/player/{}", steam_id),
+                                    title: "csstats".to_string(),
+                                },
+                                Site {
+                                    url: format!("https://faceitfinder.com/profile/{}", steam_id),
+                                    title: "Faceitfinder".to_string(),
+                                },
+                                Site {
+                                    url: format!("https://www.skinpock.com/inventory/{}", steam_id),
+                                    title: "skinpock".to_string(),
+                                },
+                            ],
+                        };
+
+                        let json = serde_json::to_string(&player);
+                        match json {
+                            Ok(json) => {
+                                redis::set(url, &json);
+                                redis::expire(url, 60 * 60 * 24);
+                                format!("{}", json)
+                            }
+                            Err(e) => {
+                                println!("error: {:?}", e);
+                                format!("Something went wrong")
+                            }
+                        }
                     }
-                    Err(e) => {
-                        println!("error: {:?}", e);
-                        format!("Something went wrong")
+                    None => {
+                        format!("Could not extract steam id")
                     }
+                },
+                Err(e) => {
+                    println!("error: {:?}", e);
+                    format!("Something went wrong")
                 }
             }
-            None => {
-                format!("Could not extract steam id")
-            }
-        },
-        Err(e) => {
-            println!("error: {:?}", e);
-            format!("Something went wrong")
         }
     }
 }
