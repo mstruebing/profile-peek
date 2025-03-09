@@ -23,11 +23,21 @@ struct Site {
 
 #[get("/<url>")]
 async fn player_route(url: &str) -> String {
-    let cache_result = redis::get(url);
+    let cached_steam_id = redis::get(url);
 
-    match cache_result {
-        Some(cache) => {
-            return cache;
+    match cached_steam_id {
+        Some(steam_id) => {
+            let player = create_player(&steam_id, url);
+            let json = serde_json::to_string(&player);
+            match json {
+                Ok(json) => {
+                    format!("{}", json)
+                }
+                Err(e) => {
+                    println!("error: {:?}", e);
+                    format!("Something went wrong")
+                }
+            }
         }
         None => {
             let resp = reqwest::get(url).await.unwrap().text().await;
@@ -35,36 +45,11 @@ async fn player_route(url: &str) -> String {
             match resp {
                 Ok(resp) => match steam::get_id(&resp) {
                     Some(steam_id) => {
-                        let player = Player {
-                            steam_id: steam_id.clone().to_string(),
-                            sites: vec![
-                                Site {
-                                    url: url.to_string(),
-                                    title: "Steam".to_string(),
-                                },
-                                Site {
-                                    url: format!("https://leetify.com/app/profile/{}", steam_id),
-                                    title: "Leetify".to_string(),
-                                },
-                                Site {
-                                    url: format!("https://csstats.gg/player/{}", steam_id),
-                                    title: "csstats".to_string(),
-                                },
-                                Site {
-                                    url: format!("https://faceitfinder.com/profile/{}", steam_id),
-                                    title: "Faceitfinder".to_string(),
-                                },
-                                Site {
-                                    url: format!("https://www.skinpock.com/inventory/{}", steam_id),
-                                    title: "skinpock".to_string(),
-                                },
-                            ],
-                        };
-
+                        let player = create_player(&steam_id, url);
                         let json = serde_json::to_string(&player);
                         match json {
                             Ok(json) => {
-                                redis::set(url, &json);
+                                redis::set(url, &steam_id);
                                 redis::expire(url, 60 * 60 * 24);
                                 format!("{}", json)
                             }
@@ -106,4 +91,34 @@ fn rocket() -> _ {
 #[options("/<_..>")]
 fn all_options() {
     /* Intentionally left empty */
+}
+
+fn create_player(steam_id: &str, url: &str) -> Player {
+    let player = Player {
+        steam_id: steam_id.to_string(),
+        sites: vec![
+            Site {
+                url: url.to_string(),
+                title: "Steam".to_string(),
+            },
+            Site {
+                url: format!("https://leetify.com/app/profile/{}", steam_id),
+                title: "Leetify".to_string(),
+            },
+            Site {
+                url: format!("https://csstats.gg/player/{}", steam_id),
+                title: "csstats".to_string(),
+            },
+            Site {
+                url: format!("https://faceitfinder.com/profile/{}", steam_id),
+                title: "Faceitfinder".to_string(),
+            },
+            Site {
+                url: format!("https://www.skinpock.com/inventory/{}", steam_id),
+                title: "skinpock".to_string(),
+            },
+        ],
+    };
+
+    player
 }
