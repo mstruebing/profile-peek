@@ -4,6 +4,10 @@ extern crate rocket;
 use rocket::fs::{relative, FileServer};
 use serde::Serialize;
 use std::env;
+use rocket::response::content::Json;
+use rocket::http::Status;
+use rocket::response::status;
+use thiserror::Error;
 
 mod cors;
 mod redis;
@@ -21,68 +25,44 @@ struct Site {
     title: String,
 }
 
+#[derive(Error, Debug)]
+enum PlayerError {
+    #[error("Failed to fetch URL: {0}")]
+    FetchError(#[from] reqwest::Error),
+    #[error("Failed to serialize JSON: {0}")]
+    JsonError(#[from] serde_json::Error),
+    #[error("Could not extract Steam ID from response")]
+    SteamIdNotFound,
+}
+
+type PlayerResult<T> = Result<T, PlayerError>;
+
 #[get("/<url>")]
-async fn player_route(url: &str) -> String {
-    let cache_result = redis::get(url);
-
-    match cache_result {
-        Some(cache) => {
-            return cache;
-        }
+async fn player_route(url: &str) -> Result<Json<String>, status::Custom<String>> {
+    let result = match redis::get(url).await {
+        Some(steam_id) => get_player_json(&steam_id).await,
         None => {
-            let resp = reqwest::get(url).await.unwrap().text().await;
+            let resp = reqwest::get(url).await?.text().await?;
+            let steam_id = steam::get_id(&resp).ok_or(PlayerError::SteamIdNotFound)?;
+            
+            let json = get_player_json(&steam_id).await?;
+            
+            // Cache the result
+            redis::set(url, &steam_id).await;
+            redis::expire(url, 60 * 60 * 24).await;
+            
+            Ok(json)
+        }
+    };
 
-            match resp {
-                Ok(resp) => match steam::get_id(&resp) {
-                    Some(steam_id) => {
-                        let player = Player {
-                            steam_id: steam_id.clone().to_string(),
-                            sites: vec![
-                                Site {
-                                    url: url.to_string(),
-                                    title: "Steam".to_string(),
-                                },
-                                Site {
-                                    url: format!("https://leetify.com/app/profile/{}", steam_id),
-                                    title: "Leetify".to_string(),
-                                },
-                                Site {
-                                    url: format!("https://csstats.gg/player/{}", steam_id),
-                                    title: "csstats".to_string(),
-                                },
-                                Site {
-                                    url: format!("https://faceitfinder.com/profile/{}", steam_id),
-                                    title: "Faceitfinder".to_string(),
-                                },
-                                Site {
-                                    url: format!("https://www.skinpock.com/inventory/{}", steam_id),
-                                    title: "skinpock".to_string(),
-                                },
-                            ],
-                        };
-
-                        let json = serde_json::to_string(&player);
-                        match json {
-                            Ok(json) => {
-                                redis::set(url, &json);
-                                redis::expire(url, 60 * 60 * 24);
-                                format!("{}", json)
-                            }
-                            Err(e) => {
-                                println!("error: {:?}", e);
-                                format!("Something went wrong")
-                            }
-                        }
-                    }
-                    None => {
-                        format!("Could not extract steam id")
-                    }
-                },
-                Err(e) => {
-                    println!("error: {:?}", e);
-                    format!("Something went wrong")
-                }
-            }
+    match result {
+        Ok(json) => Ok(Json(json)),
+        Err(e) => {
+            eprintln!("Error processing request: {}", e);
+            Err(status::Custom(
+                Status::InternalServerError,
+                e.to_string()
+            ))
         }
     }
 }
@@ -106,4 +86,38 @@ fn rocket() -> _ {
 #[options("/<_..>")]
 fn all_options() {
     /* Intentionally left empty */
+}
+
+async fn get_player_json(steam_id: &str) -> PlayerResult<String> {
+    let player = create_player(steam_id);
+    Ok(serde_json::to_string(&player)?)
+}
+
+
+fn create_player(steam_id: &str) -> Player {
+    Player {
+        steam_id: steam_id.to_string(),
+        sites: create_sites(steam_id),
+    }
+}
+
+fn create_sites(steam_id: &str) -> Vec<Site> {
+    vec![
+        Site {
+            url: format!("https://leetify.com/app/profile/{}", steam_id),
+            title: "Leetify".to_string(),
+        },
+        Site {
+            url: format!("https://csstats.gg/player/{}", steam_id),
+            title: "csstats".to_string(),
+        },
+        Site {
+            url: format!("https://faceitfinder.com/profile/{}", steam_id),
+            title: "Faceitfinder".to_string(),
+        },
+        Site {
+            url: format!("https://www.skinpock.com/inventory/{}", steam_id),
+            title: "skinpock".to_string(),
+        },
+    ]
 }
