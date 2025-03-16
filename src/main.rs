@@ -21,6 +21,8 @@ struct Site {
     title: String,
 }
 
+static STEAM_PROFILE_FETCH_ERROR_KEY: &str = "//steam_profile_fetch_errors";
+
 /// Catches all OPTION requests in order to get the CORS related Fairing triggered.
 #[options("/<_..>")]
 fn all_options() {
@@ -49,7 +51,7 @@ async fn player_route(url: &str) -> String {
             Some(steam_id) => handle_cached_player(&steam_id, url),
             None => handle_new_player(&id, url).await,
         },
-        None => format!("Could not extract steam id"),
+        None => format!("Could not extract steam id from url"),
     }
 }
 
@@ -81,7 +83,10 @@ async fn handle_new_player(id: &str, url: &str) -> String {
                     }
                 }
             }
-            None => format!("Could not extract steam id"),
+            None => {
+                redis::incr(STEAM_PROFILE_FETCH_ERROR_KEY);
+                format!("Could not extract steam id from html")
+            }
         },
         Err(e) => {
             println!("error: {:?}", e);
