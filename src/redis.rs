@@ -21,19 +21,19 @@ lazy_static::lazy_static! {
 
 pub fn set(key: &str, value: &str) {
     let pool = POOL.clone();
-    let con = pool.get().expect("Failed to get connection from pool");
+    let mut con = pool.get().expect("Failed to get connection from pool");
     let _: () = con.set(key, value).expect("failed to set key");
 }
 
 pub fn get(key: &str) -> Option<String> {
     let pool = POOL.clone();
-    let con = pool.get().expect("Failed to get connection from pool");
+    let mut con = pool.get().expect("Failed to get connection from pool");
     let value: Option<String> = con.get(key).expect("failed to get key");
     value
 }
 
 pub fn expire(key: &str, seconds: usize) {
     let pool = POOL.clone();
-    let con = pool.get().expect("Failed to get connection from pool");
+    let mut con = pool.get().expect("Failed to get connection from pool");
     let _: () = con.expire(key, seconds).expect("failed to set expiry");
 }

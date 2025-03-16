@@ -1,4 +1,4 @@
-build: build-frontend build-backend
+build: build-frontend build-backend build-extension
 
 build-frontend: 
 	npm run build --prefix frontend
@@ -11,12 +11,11 @@ build-extension:
 		cp background.js dist/background.js && \
 		cp content-script.js dist/content-script.js
 
+build-backend:
+	cargo build
 
 watch-frontend: build-frontend
 	while inotifywait -r frontend/src frontend/assets -e modify; do { make build-frontend; }; done
-
-build-backend:
-	cargo build
 
 start-server:
 	REDIS_URL="redis://127.0.0.1" ROCKET_ADDRESS=0.0.0.0 ROCKET_PORT=8000 cargo run
