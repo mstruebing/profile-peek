@@ -12,7 +12,8 @@ build-extension:
 		cp background.js dist/background.js && \
 		cp content-script.js dist/content-script.js && \
 		rm dist/elm.js && \
-		mv dist/elm.min.js dist/elm.js
+		mv dist/elm.min.js dist/elm.js && \
+		cp assets/* dist/
 
 build-backend:
 	cargo build
