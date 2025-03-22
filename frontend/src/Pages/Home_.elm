@@ -132,7 +132,7 @@ links sites =
 
 link : Site -> Html Msg
 link { title, url } =
-    column [ class "link" ] [ Html.a [ target "blank", href url ] [ Html.text title ] ]
+    column [ class "link" ] [ Html.a [ target "_blank", rel "noopener noreferrer", href url ] [ Html.text title ] ]
 
 
 row : List (Html.Attribute msg) -> List (Html msg) -> Html msg
