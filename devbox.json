@@ -7,7 +7,8 @@
     "nodejs@latest",
     "elmPackages.elm@latest",
     "elmPackages.elm-format@latest",
-    "inotify-tools@latest"
+    "inotify-tools@latest",
+    "uglify-js@latest"
   ],
   "shell": {
     "init_hook": [
