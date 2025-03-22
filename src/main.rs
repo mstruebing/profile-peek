@@ -115,10 +115,6 @@ fn create_player(steam_id: &str, url: &str) -> Player {
                 url: format!("https://faceitfinder.com/profile/{}", steam_id),
                 title: "Faceitfinder".to_string(),
             },
-            Site {
-                url: format!("https://www.skinpock.com/inventory/{}", steam_id),
-                title: "skinpock".to_string(),
-            },
         ],
     }
 }
