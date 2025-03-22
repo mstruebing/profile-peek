@@ -1,7 +1,7 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
 import Html exposing (Html)
-import Html.Attributes exposing (autofocus, class, disabled, href, placeholder, target)
+import Html.Attributes exposing (autofocus, class, disabled, href, placeholder, rel, target)
 import Html.Events exposing (onInput, onSubmit)
 import Http exposing (Error(..))
 import Json.Decode exposing (Decoder, field)
