@@ -2,7 +2,7 @@ port module Main exposing (main)
 
 import Browser
 import Html exposing (Html)
-import Html.Attributes exposing (class, href, style, target)
+import Html.Attributes exposing (href, rel, style, target)
 import Http exposing (Error(..))
 import Json.Decode exposing (Decoder, decodeString, field)
 import Json.Encode
@@ -103,11 +103,10 @@ subscriptions _ =
 
 view : Model -> Html Msg
 view model =
-    column
+    Html.div
         [ style "position" "fixed"
-        , style "top" "50%"
-        , style "left" "0"
-        , style "transform" "translate(50%, -50%)"
+        , style "bottom" "10px"
+        , style "left" "10px"
         ]
         [ case model.response of
             RemoteData.NotAsked ->
@@ -126,30 +125,12 @@ view model =
 
 links : List Site -> Html Msg
 links sites =
-    row [] <| List.map link sites
+    Html.div [] <| List.map link sites
 
 
 link : Site -> Html Msg
 link { title, url } =
-    column [] [ Html.a [ target "blank", href url ] [ Html.text title ] ]
-
-
-row : List (Html.Attribute msg) -> List (Html msg) -> Html msg
-row attrs children =
-    let
-        attributes =
-            class "row" :: attrs
-    in
-    Html.div attributes children
-
-
-column : List (Html.Attribute msg) -> List (Html msg) -> Html msg
-column attrs children =
-    let
-        attributes =
-            class "column" :: attrs
-    in
-    Html.div attributes children
+    Html.div [] [ Html.a [ target "_blank", rel "noopener noreferrer", href url ] [ Html.text title ] ]
 
 
 responseDecoder : Decoder Response
