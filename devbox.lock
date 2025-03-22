@@ -369,6 +369,54 @@
           "store_path": "/nix/store/dqz7ghl1i46i8nswvkkl3h3jbhxkbchg-rustup-1.27.1"
         }
       }
+    },
+    "uglify-js@latest": {
+      "last_modified": "2025-02-23T09:42:26Z",
+      "resolved": "github:NixOS/nixpkgs/2d068ae5c6516b2d04562de50a58c682540de9bf#uglify-js",
+      "source": "devbox-search",
+      "version": "3.19.3",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/fx79glpypxlgz9nd8klr6qbaq54qmz21-uglify-js-3.19.3",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/fx79glpypxlgz9nd8klr6qbaq54qmz21-uglify-js-3.19.3"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/xnwjqg4mzgnjsrja4w7jffch9v7jfxsf-uglify-js-3.19.3",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/xnwjqg4mzgnjsrja4w7jffch9v7jfxsf-uglify-js-3.19.3"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/b8143h0910zancpvky7pir33xlkhpqgb-uglify-js-3.19.3",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/b8143h0910zancpvky7pir33xlkhpqgb-uglify-js-3.19.3"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/yrai60792nhszp21xsws9r18sqq3s32k-uglify-js-3.19.3",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/yrai60792nhszp21xsws9r18sqq3s32k-uglify-js-3.19.3"
+        }
+      }
     }
   }
 }
