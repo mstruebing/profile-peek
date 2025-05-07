@@ -109,11 +109,7 @@ fn create_player(steam_id: &str, url: &str) -> Player {
             },
             Site {
                 url: format!("https://csstats.gg/player/{}", steam_id),
-                title: "csstats".to_string(),
-            },
-            Site {
-                url: format!("https://faceitfinder.com/profile/{}", steam_id),
-                title: "Faceitfinder".to_string(),
+                title: "CsStats".to_string(),
             },
         ],
     }

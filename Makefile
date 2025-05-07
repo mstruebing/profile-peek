@@ -15,6 +15,10 @@ build-extension:
 		mv dist/elm.min.js dist/elm.js && \
 		cp assets/* dist/
 
+watch-extension:
+	while inotifywait -r extension/src -e modify; do { make build-extension; }; done
+
+
 build-backend:
 	cargo build
 
