@@ -30,6 +30,19 @@ chrome.runtime.sendMessage({ type: 'INJECT_ELM' }, (_response) => {
         app.ports.setLocalStorageItem.subscribe(([key, value]) => {
             localStorage.setItem(key, JSON.stringify(value));
         });
+
+        setTimeout(() => {
+
+        document.querySelectorAll(".profile-peek-icon").forEach((icon) => {
+            icon.addEventListener("mouseover", (e) => {
+                e.target.style.scale = "1.5";
+            })
+
+            icon.addEventListener("mouseout", (e) => {
+                e.target.style.scale = "1";
+            })
+        })
+        }, 1000)
     } else {
         console.error('Elm.Main not found');
     }

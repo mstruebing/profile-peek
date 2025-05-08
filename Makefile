@@ -15,15 +15,15 @@ build-extension:
 		mv dist/elm.min.js dist/elm.js && \
 		cp assets/* dist/
 
-watch-extension:
-	while inotifywait -r extension/src -e modify; do { make build-extension; }; done
+watch-extension: build-extension
+	while inotifywait -r extension/src shared/src -e modify; do { make build-extension; }; done
 
 
 build-backend:
 	cargo build
 
 watch-frontend: build-frontend
-	while inotifywait -r frontend/src frontend/assets -e modify; do { make build-frontend; }; done
+	while inotifywait -r frontend/src frontend/assets shared/src -e modify; do { make build-frontend; }; done
 
 start-server:
 	REDIS_URL="redis://127.0.0.1" ROCKET_ADDRESS=0.0.0.0 ROCKET_PORT=8000 cargo run
