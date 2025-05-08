@@ -1,6 +1,6 @@
 module Components exposing (IconType(..), icon, link, logo, sideBar, stringToIconType)
 
-import API exposing (assetUrl)
+import API
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 
@@ -64,10 +64,10 @@ type IconType
 
 
 icon : Maybe IconType -> Int -> Int -> Html msg
-icon maybeIconType width heigth =
+icon maybeIconType width height =
     case maybeIconType of
         Just iconType ->
-            Html.img [ Html.Attributes.title (iconTypeToString iconType), Html.Attributes.src (iconMapping iconType), Html.Attributes.width width, Html.Attributes.height heigth ] []
+            Html.img [ Html.Attributes.title (iconTypeToString iconType), Html.Attributes.src (iconMapping iconType), Html.Attributes.width width, Html.Attributes.height height ] []
 
         Nothing ->
             Html.text ""
@@ -77,13 +77,13 @@ iconMapping : IconType -> String
 iconMapping iconType =
     case iconType of
         Leetify ->
-            assetUrl ++ "/icons/leetify.svg"
+            API.assetUrl ++ "/icons/leetify.svg"
 
         CsStats ->
-            assetUrl ++ "/icons/csstats.svg"
+            API.assetUrl ++ "/icons/csstats.svg"
 
         ProfilePeek ->
-            assetUrl ++ "/icons/logo-button.svg"
+            API.assetUrl ++ "/icons/logo-button.svg"
 
 
 stringToIconType : String -> Maybe IconType
@@ -112,4 +112,4 @@ iconTypeToString iconType =
             "csstats"
 
         ProfilePeek ->
-            "ProfilePeek"
+            "ProfilePeek" 

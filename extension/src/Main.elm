@@ -45,7 +45,9 @@ type alias Model =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { url = flags.url, response = RemoteData.NotAsked }
+    ( { url = flags.url
+      , response = RemoteData.NotAsked
+      }
     , Cmd.batch
         [ Http.get
             { url = playerUrl ++ "/" ++ percentEncode flags.url

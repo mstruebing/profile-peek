@@ -61,4 +61,4 @@ siteEncoder site =
     Json.Encode.object
         [ ( "title", Json.Encode.string site.title )
         , ( "url", Json.Encode.string site.url )
-        ]
+        ] 
