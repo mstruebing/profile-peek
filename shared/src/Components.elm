@@ -67,7 +67,15 @@ icon : Maybe IconType -> Int -> Int -> Html msg
 icon maybeIconType width height =
     case maybeIconType of
         Just iconType ->
-            Html.img [ Html.Attributes.title (iconTypeToString iconType), Html.Attributes.src (iconMapping iconType), Html.Attributes.width width, Html.Attributes.height height ] []
+            Html.img
+                [ Html.Attributes.title (iconTypeToString iconType)
+                , Html.Attributes.class "profile-peek-icon"
+                , Html.Attributes.src (iconMapping iconType)
+                , Html.Attributes.width width
+                , Html.Attributes.height height
+                , Html.Attributes.style "transition" "all 0.3s ease-in-out"
+                ]
+                []
 
         Nothing ->
             Html.text ""
@@ -112,4 +120,4 @@ iconTypeToString iconType =
             "csstats"
 
         ProfilePeek ->
-            "ProfilePeek" 
+            "ProfilePeek"
