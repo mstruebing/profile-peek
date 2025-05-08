@@ -20,6 +20,7 @@ column children =
         , style "width" "100%"
         , style "height" "100%"
         , style "gap" "15px"
+        , style "padding-bottom" "10px"
         ]
         children
 
@@ -91,7 +92,7 @@ stringToIconType str =
         "Leetify" ->
             Just Leetify
 
-        "csstats" ->
+        "CsStats" ->
             Just CsStats
 
         "ProfilePeek" ->
