@@ -1,4 +1,4 @@
-module Components exposing (IconType(..), icon, link, logo, sideBar, stringToIconType)
+module Components exposing (IconType(..), icon, link, logo, logoButton, sideBar, stringToIconType)
 
 import API
 import Html exposing (Html)
@@ -7,6 +7,17 @@ import Html.Attributes exposing (style)
 
 logo : Html msg
 logo =
+    Html.img
+        [ Html.Attributes.title "Profile Peek"
+        , Html.Attributes.src (API.assetUrl ++ "/icons/logo.svg")
+        , Html.Attributes.width 200
+        , Html.Attributes.height 30
+        ]
+        []
+
+
+logoButton : Html msg
+logoButton =
     icon (Just ProfilePeek) 40 40
 
 
@@ -58,7 +69,8 @@ link url children =
 
 
 type IconType
-    = Leetify
+    = Steam
+    | Leetify
     | CsStats
     | ProfilePeek
 
@@ -84,6 +96,9 @@ icon maybeIconType width height =
 iconMapping : IconType -> String
 iconMapping iconType =
     case iconType of
+        Steam ->
+            API.assetUrl ++ "/icons/steam.svg"
+
         Leetify ->
             API.assetUrl ++ "/icons/leetify.svg"
 
@@ -97,6 +112,9 @@ iconMapping iconType =
 stringToIconType : String -> Maybe IconType
 stringToIconType str =
     case str of
+        "Steam" ->
+            Just Steam
+
         "Leetify" ->
             Just Leetify
 
@@ -113,6 +131,9 @@ stringToIconType str =
 iconTypeToString : IconType -> String
 iconTypeToString iconType =
     case iconType of
+        Steam ->
+            "Steam"
+
         Leetify ->
             "Leetify"
 

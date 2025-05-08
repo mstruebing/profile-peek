@@ -1,11 +1,11 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
-import Components exposing (link)
+import API exposing (responseDecoder)
+import Components
 import Html exposing (Html)
-import Html.Attributes exposing (autofocus, class, disabled, href, placeholder, rel, target)
+import Html.Attributes exposing (autofocus, class, disabled, placeholder, style)
 import Html.Events exposing (onInput, onSubmit)
 import Http exposing (Error(..))
-import Json.Decode exposing (Decoder, field)
 import Page exposing (Page)
 import Platform.Cmd as Cmd
 import RemoteData exposing (RemoteData)
@@ -97,63 +97,129 @@ view : Model -> View Msg
 view model =
     { title = "Finder"
     , body =
-        [ column [ class "gap" ]
-            [ Html.form [ onSubmit Submit ]
-                [ Html.input
-                    [ disabled <| model.response == RemoteData.Loading
-                    , placeholder "steam link"
-                    , autofocus True
-                    , onInput <| UpdateInput
-                    ]
-                    []
-                , row [] [ Html.button [ disabled <| model.response == RemoteData.Loading ] [ Html.text "search" ] ]
-                ]
-            , case model.response of
-                RemoteData.NotAsked ->
-                    Html.text ""
+        [ header
+        , Html.div
+            [ Html.Attributes.id "wrapper"
+            , style "display" "flex"
+            , style "flex-direction" "column"
+            , style "justify-content" "space-between"
+            , style "margin-top"
+                (if model.response == RemoteData.NotAsked then
+                    "40vh"
 
-                RemoteData.Loading ->
-                    Html.div [ class "loading" ] [ Html.text "loading..." ]
+                 else
+                    "20vh"
+                )
+            , style "height"
+                (if model.response == RemoteData.NotAsked then
+                    "auto"
 
-                RemoteData.Success response ->
-                    Html.div [] [ links response.sites ]
-
-                RemoteData.Failure error ->
-                    column [ class "error" ]
-                        [ Html.div [] [ Html.text <| errorToString error ]
-                        , Html.div [] [ Html.text "Try again" ]
-                        ]
+                 else
+                    "40vh"
+                )
             ]
+            [ searchBox model, searchResults model ]
         ]
     }
 
 
-links : List Site -> Html Msg
-links sites =
-    row [ class "link__row" ] <| List.map siteLink sites
+header : Html Msg
+header =
+    Html.header
+        [ style "background-color" "rgb(34, 32, 32)"
+        , style "width" "100vw"
+        , style "position" "fixed"
+        , style "top" "10px"
+        ]
+        [ Components.logo
+        ]
 
 
-siteLink : Site -> Html Msg
-siteLink { title, url } =
-    column [ class "link" ] [ Components.link url (Html.text title) ]
+searchBox : Model -> Html Msg
+searchBox model =
+    Html.div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "align-items" "center"
+        , style "justify-content" "center"
+        ]
+        [ Html.form
+            [ onSubmit Submit
+            ]
+            [ Html.div
+                [ style "display" "flex"
+                , style "align-items" "center"
+                , style "justify-content" "center"
+                , style "flex-direction" "column"
+                , style "gap" "10px"
+                ]
+                [ Html.input
+                    [ placeholder "Enter the Steam profile URL"
+                    , autofocus True
+                    , onInput UpdateInput
+                    , style "width" "500px"
+                    , style "height" "40px"
+                    , style "line-height" "35px"
+                    , style "font-size" "16px"
+                    , style "border-radius" "22px"
+                    , style "padding" "5px 12px"
+                    , style "background-color" "white"
+                    ]
+                    []
+                , Html.div [ style "height" "45px" ]
+                    [ Html.button
+                        [ disabled
+                            (String.isEmpty model.input)
+                        , style "background-color" "#123"
+                        , style "margin" "5px"
+                        , style "color" "white"
+                        , style "border-radius" "22px"
+                        , style "border-style" "solid"
+                        , style "border-color" "white"
+                        , style "padding" "0 0 0 6px"
+                        , Html.Attributes.id "submit-button"
+                        ]
+                        [ Html.div
+                            [ style "display" "flex"
+                            , style "align-items" "center"
+                            , style "justify-content" "center"
+                            , style "gap" "10px"
+                            ]
+                            [ Html.text "Search"
+                            , Components.icon (Just Components.ProfilePeek) 40 40
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
 
 
-row : List (Html.Attribute msg) -> List (Html msg) -> Html msg
-row attrs children =
-    let
-        attributes =
-            class "row" :: attrs
-    in
-    Html.div attributes children
+searchResults : Model -> Html Msg
+searchResults model =
+    case model.response of
+        RemoteData.NotAsked ->
+            Html.text ""
 
+        RemoteData.Loading ->
+            Html.text ""
 
-column : List (Html.Attribute msg) -> List (Html msg) -> Html msg
-column attrs children =
-    let
-        attributes =
-            class "column" :: attrs
-    in
-    Html.div attributes children
+        RemoteData.Success response ->
+            Html.div
+                [ style "display" "flex"
+                , style "align-items" "center"
+                , style "justify-content" "center"
+                , style "gap" "20px"
+                ]
+                (response.sites
+                    |> List.map
+                        (\site ->
+                            Components.link site.url (Components.icon (Components.stringToIconType site.title) 40 40)
+                        )
+                )
+
+        RemoteData.Failure error ->
+            Html.text (errorToString error)
 
 
 errorToString : Http.Error -> String
@@ -173,22 +239,3 @@ errorToString err =
 
         BadUrl url ->
             "Malformed url: " ++ url
-
-
-responseDecoder : Decoder Response
-responseDecoder =
-    Json.Decode.map2 Response
-        (field "steam_id" Json.Decode.string)
-        sitesDecoder
-
-
-sitesDecoder : Decoder (List Site)
-sitesDecoder =
-    field "sites" (Json.Decode.list siteDecoder)
-
-
-siteDecoder : Decoder Site
-siteDecoder =
-    Json.Decode.map2 Site
-        (field "title" Json.Decode.string)
-        (field "url" Json.Decode.string)

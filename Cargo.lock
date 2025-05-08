@@ -202,22 +202,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
-name = "csportal-player-finder"
-version = "0.1.0"
-dependencies = [
- "lazy_static",
- "openssl",
- "r2d2",
- "r2d2_redis",
- "redis 0.30.0",
- "regex",
- "reqwest",
- "rocket",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "deranged"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1094,6 +1078,22 @@ dependencies = [
  "syn",
  "version_check",
  "yansi",
+]
+
+[[package]]
+name = "profile-peek"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "openssl",
+ "r2d2",
+ "r2d2_redis",
+ "redis 0.30.0",
+ "regex",
+ "reqwest",
+ "rocket",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

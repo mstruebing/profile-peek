@@ -1,4 +1,4 @@
-# csportal-player-finder
+# profile-peek
 > Built with [Elm Land](https://elm.land) 🌈
 
 ## Local development
