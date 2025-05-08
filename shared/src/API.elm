@@ -16,7 +16,7 @@ type alias Response =
 
 baseUrl : String
 baseUrl =
-    "https://finder.maex.me"
+    "https://profile-peek.com"
 
 
 playerUrl : String
@@ -61,4 +61,4 @@ siteEncoder site =
     Json.Encode.object
         [ ( "title", Json.Encode.string site.title )
         , ( "url", Json.Encode.string site.url )
-        ] 
+        ]

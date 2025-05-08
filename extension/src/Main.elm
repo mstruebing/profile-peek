@@ -2,7 +2,7 @@ port module Main exposing (main)
 
 import API exposing (Response, baseUrl, playerUrl, responseDecoder, responseEncoder)
 import Browser
-import Components exposing (icon, link, logo, sideBar, stringToIconType)
+import Components exposing (icon, link, logoButton, sideBar, stringToIconType)
 import Html exposing (Html)
 import Http exposing (Error(..))
 import Json.Decode exposing (decodeString)
@@ -104,7 +104,7 @@ view model =
             Html.text ""
 
         RemoteData.Success response ->
-            sideBar <| link baseUrl logo :: responseToLinks response
+            sideBar <| link baseUrl logoButton :: responseToLinks response
 
         RemoteData.Failure _ ->
             Html.text ""

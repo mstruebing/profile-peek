@@ -1,6 +1,6 @@
 FROM rust:1.82.0 AS builder
 
-WORKDIR /csportal-player-finder
+WORKDIR /profile-peek
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 
@@ -10,20 +10,22 @@ RUN cargo build --target x86_64-unknown-linux-musl --release
 
 FROM node:22.9.0-alpine AS frontend
 
-WORKDIR /csportal-player-finder
+WORKDIR /profile-peek
 
-COPY ./frontend ./
-RUN npm install
-RUN npm run build
+COPY ./frontend ./frontend
+COPY ./shared ./shared
+
+RUN npm install --prefix frontend
+RUN npm run build --prefix frontend
 
 FROM alpine:3.20.3
 
-COPY --from=builder /csportal-player-finder/target/x86_64-unknown-linux-musl/release/csportal-player-finder /csportal-player-finder/csportal-player-finder
-COPY --from=frontend /csportal-player-finder/dist /www/public/
+COPY --from=builder /profile-peek/target/x86_64-unknown-linux-musl/release/profile-peek /profile-peek/profile-peek
+COPY --from=frontend /profile-peek/frontend/dist /www/public/
 
 ENV ROCKET_ADDRESS=0.0.0.0
 ENV ROCKET_PORT=8000
 ENV ROCKET_ENV=production
 
-CMD ["/csportal-player-finder/csportal-player-finder"]
+CMD ["/profile-peek/profile-peek"]
 EXPOSE 8000

@@ -1,7 +1,7 @@
 {
     "type": "package",
-    "name": "player-finder/shared",
-    "summary": "Shared components for player-finder app",
+    "name": "profile-peek/shared",
+    "summary": "Shared components for profile-peek app",
     "license": "MIT",
     "version": "1.0.0",
     "exposed-modules": [

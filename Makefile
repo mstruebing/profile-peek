@@ -3,6 +3,9 @@ build: build-frontend build-backend build-extension
 build-frontend: 
 	npm run build --prefix frontend
 
+start-frontend:
+	npm run start --prefix frontend
+
 build-extension:
 	cd extension && \
 		rm -rf dist && \
@@ -29,7 +32,7 @@ start-server:
 	REDIS_URL="redis://127.0.0.1" ROCKET_ADDRESS=0.0.0.0 ROCKET_PORT=8000 cargo run
 
 docker:
-	docker build -t mstruebing/csportal-player-finder .
+	docker build -t mstruebing/profile-peek .
 
 format:
 	rustfmt --edition 2021 src/main.rs
@@ -42,7 +45,7 @@ request:
 	curl 'http://0.0.0.0:8000/player/https%3A%2F%2Fsteamcommunity.com%2Fid%2Finsi--'
 
 req:
-	curl 'https://finder.maex.me/player/https%3A%2F%2Fsteamcommunity.com%2Fid%2Finsi--'
+	curl 'https://profile-peek.com/player/https%3A%2F%2Fsteamcommunity.com%2Fid%2Finsi--'
 
 redis-server:
 	docker run -it --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
