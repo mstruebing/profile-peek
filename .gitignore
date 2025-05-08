@@ -10,3 +10,4 @@ node_modules
 !.nvim.lua
 extension/elm-stuff
 extension/dist
+.envrc

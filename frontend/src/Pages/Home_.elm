@@ -1,5 +1,6 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
+import Components exposing (link)
 import Html exposing (Html)
 import Html.Attributes exposing (autofocus, class, disabled, href, placeholder, rel, target)
 import Html.Events exposing (onInput, onSubmit)
@@ -44,7 +45,9 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { input = "", response = RemoteData.NotAsked }
+    ( { input = ""
+      , response = RemoteData.NotAsked
+      }
     , Cmd.none
     )
 
@@ -127,12 +130,12 @@ view model =
 
 links : List Site -> Html Msg
 links sites =
-    row [ class "link__row" ] <| List.map link sites
+    row [ class "link__row" ] <| List.map siteLink sites
 
 
-link : Site -> Html Msg
-link { title, url } =
-    column [ class "link" ] [ Html.a [ target "_blank", rel "noopener noreferrer", href url ] [ Html.text title ] ]
+siteLink : Site -> Html Msg
+siteLink { title, url } =
+    column [ class "link" ] [ Components.link url (Html.text title) ]
 
 
 row : List (Html.Attribute msg) -> List (Html msg) -> Html msg
