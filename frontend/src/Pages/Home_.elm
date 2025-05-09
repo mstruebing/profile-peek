@@ -1,7 +1,7 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
 import API exposing (responseDecoder)
-import Components
+import Components exposing (textLink)
 import Html exposing (Html)
 import Html.Attributes exposing (autofocus, disabled, placeholder, style)
 import Html.Events exposing (onInput, onSubmit)
@@ -260,17 +260,12 @@ footer =
         , style "bottom" "0"
         , style "display" "flex"
         , style "align-items" "center"
-        , style "justify-content" "space-between"
+        , style "justify-content" "center"
         , style "padding" "20px"
+        , style "gap" "50px"
         ]
-        [ Html.div
-            [ style "display" "flex"
-            , style "align-items" "center"
-            , style "justify-content" "center"
-            , style "width" "100%"
-            ]
-            [ contact
-            ]
+        [ browserExtension
+        , contact
         ]
 
 
@@ -291,20 +286,17 @@ buyMeACoffee =
         ]
 
 
+browserExtension : Html Msg
+browserExtension =
+    Html.div
+        []
+        [ textLink "https://chromewebstore.google.com/detail/profile-peek/fbpcaneckpeeinnachahnnpapdiaohei" "Browser Extension"
+        ]
+
+
 contact : Html Msg
 contact =
     Html.div
         []
         [ textLink "mailto:hi@profile-peek.com" "hi@profile-peek.com"
         ]
-
-
-textLink : String -> String -> Html Msg
-textLink url text =
-    Html.a
-        [ Html.Attributes.href url
-        , Html.Attributes.target "_blank"
-        , style "color" "white"
-        , style "text-decoration" "underline"
-        ]
-        [ Html.text text ]

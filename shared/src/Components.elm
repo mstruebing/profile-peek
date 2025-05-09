@@ -1,4 +1,4 @@
-module Components exposing (IconType(..), icon, link, logo, logoButton, sideBar, stringToIconType)
+module Components exposing (IconType(..), icon, link, logo, logoButton, sideBar, stringToIconType, textLink)
 
 import API
 import Html exposing (Html)
@@ -142,3 +142,14 @@ iconTypeToString iconType =
 
         ProfilePeek ->
             "ProfilePeek"
+
+
+textLink : String -> String -> Html msg
+textLink url text =
+    Html.a
+        [ Html.Attributes.href url
+        , Html.Attributes.target "_blank"
+        , style "color" "white"
+        , style "text-decoration" "underline"
+        ]
+        [ Html.text text ]
