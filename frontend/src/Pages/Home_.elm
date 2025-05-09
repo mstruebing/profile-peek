@@ -3,7 +3,7 @@ module Pages.Home_ exposing (Model, Msg, page)
 import API exposing (responseDecoder)
 import Components
 import Html exposing (Html)
-import Html.Attributes exposing (autofocus, class, disabled, placeholder, style)
+import Html.Attributes exposing (autofocus, disabled, placeholder, style)
 import Html.Events exposing (onInput, onSubmit)
 import Http exposing (Error(..))
 import Page exposing (Page)
@@ -95,7 +95,7 @@ subscriptions _ =
 
 view : Model -> View Msg
 view model =
-    { title = "Finder"
+    { title = "Profile-Peek"
     , body =
         [ header
         , Html.div
@@ -119,6 +119,7 @@ view model =
                 )
             ]
             [ searchBox model, searchResults model ]
+        , footer
         ]
     }
 
@@ -127,11 +128,16 @@ header : Html Msg
 header =
     Html.header
         [ style "background-color" "rgb(34, 32, 32)"
-        , style "width" "100vw"
+        , style "width" "100%"
         , style "position" "fixed"
         , style "top" "10px"
+        , style "display" "flex"
+        , style "align-items" "center"
+        , style "justify-content" "space-between"
+        , style "padding" "20px"
         ]
         [ Components.logo
+        , buyMeACoffee
         ]
 
 
@@ -145,6 +151,7 @@ searchBox model =
         ]
         [ Html.form
             [ onSubmit Submit
+            , style "width" "100%"
             ]
             [ Html.div
                 [ style "display" "flex"
@@ -152,12 +159,14 @@ searchBox model =
                 , style "justify-content" "center"
                 , style "flex-direction" "column"
                 , style "gap" "10px"
+                , style "width" "100%"
                 ]
                 [ Html.input
                     [ placeholder "Enter the Steam profile URL"
                     , autofocus True
                     , onInput UpdateInput
-                    , style "width" "500px"
+                    , style "max-width" "500px"
+                    , style "width" "100%"
                     , style "height" "40px"
                     , style "line-height" "35px"
                     , style "font-size" "16px"
@@ -239,3 +248,62 @@ errorToString err =
 
         BadUrl url ->
             "Malformed url: " ++ url
+
+
+footer : Html Msg
+footer =
+    Html.footer
+        [ style "background-color" "rgb(34, 32, 32)"
+        , style "width" "100%"
+        , style "position" "fixed"
+        , style "bottom" "0"
+        , style "display" "flex"
+        , style "align-items" "center"
+        , style "justify-content" "space-between"
+        , style "padding" "20px"
+        ]
+        [ Html.div
+            [ style "display" "flex"
+            , style "align-items" "center"
+            , style "justify-content" "center"
+            , style "width" "100%"
+            ]
+            [ contact
+            ]
+        ]
+
+
+buyMeACoffee : Html Msg
+buyMeACoffee =
+    Html.a
+        [ Html.Attributes.href "https://www.buymeacoffee.com/mstruebing"
+        , Html.Attributes.target "_blank"
+        , Html.Attributes.style "margin-right" "40px"
+        ]
+        [ Html.img
+            [ Html.Attributes.src "https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+            , Html.Attributes.alt "Buy Me A Coffee"
+            , Html.Attributes.style "height" "40px"
+            , Html.Attributes.style "width" "auto"
+            ]
+            []
+        ]
+
+
+contact : Html Msg
+contact =
+    Html.div
+        []
+        [ textLink "mailto:hi@profile-peek.com" "hi@profile-peek.com"
+        ]
+
+
+textLink : String -> String -> Html Msg
+textLink url text =
+    Html.a
+        [ Html.Attributes.href url
+        , Html.Attributes.target "_blank"
+        , style "color" "white"
+        , style "text-decoration" "underline"
+        ]
+        [ Html.text text ]
