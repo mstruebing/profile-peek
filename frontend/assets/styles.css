@@ -31,3 +31,14 @@ body {
 .profile-peek-icon:hover {
     transform: scale(1.2);
 }
+
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        height: 100px !important;
+    }
+
+    header > a {
+        margin-right: 0 !important;
+    }
+}
