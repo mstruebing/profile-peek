@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Profile Peek",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Find a player by their Steam Profile on other platforms",
    "icons": {
     "16": "logo-16.png",
