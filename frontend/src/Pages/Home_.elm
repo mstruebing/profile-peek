@@ -159,7 +159,8 @@ searchBox model =
                 , style "justify-content" "center"
                 , style "flex-direction" "column"
                 , style "gap" "10px"
-                , style "width" "100%"
+                , style "width" "90%"
+                , style "margin" "0 auto"
                 ]
                 [ Html.input
                     [ placeholder "Enter the Steam profile URL"
