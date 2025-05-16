@@ -37,9 +37,3 @@ pub fn expire(key: &str, seconds: usize) {
     let mut con = pool.get().expect("Failed to get connection from pool");
     let _: () = con.expire(key, seconds).expect("failed to set expiry");
 }
-
-pub fn incr(key: &str) {
-    let pool = POOL.clone();
-    let mut con = pool.get().expect("Failed to get connection from pool");
-    let _: () = con.incr(key, 1).expect("failed to increment key");
-}
