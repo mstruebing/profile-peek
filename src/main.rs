@@ -8,6 +8,7 @@ use std::env;
 mod cors;
 mod redis;
 mod steam;
+mod tracking;
 
 #[derive(Serialize)]
 struct Player {
@@ -21,8 +22,6 @@ struct Site {
     title: String,
 }
 
-static STEAM_PROFILE_FETCH_ERROR_KEY: &str = "//steam_profile_fetch_errors";
-
 /// Catches all OPTION requests in order to get the CORS related Fairing triggered.
 #[options("/<_..>")]
 fn all_options() {
@@ -31,6 +30,9 @@ fn all_options() {
 
 #[launch]
 fn rocket() -> _ {
+    // make sure the domain is defined when starting the server
+    tracking::get_domain();
+
     let rocket_env = env::var("ROCKET_ENV");
     match rocket_env {
         Ok(_) => rocket::build()
@@ -46,9 +48,14 @@ fn rocket() -> _ {
 
 #[get("/<url>")]
 async fn player_route(url: &str) -> String {
+    tracking::track_search_request(&url).await;
+
     match steam::get_id_from_url(url) {
         Some(id) => match redis::get(&id) {
-            Some(steam_id) => handle_cached_player(&steam_id, url),
+            Some(steam_id) => {
+                tracking::track_cache_hit(&steam_id, &url).await;
+                handle_cached_player(&steam_id, url)
+            }
             None => handle_new_player(&id, url).await,
         },
         None => format!("Could not extract steam id from url"),
@@ -78,18 +85,21 @@ async fn handle_new_player(id: &str, url: &str) -> String {
                         format!("{}", json)
                     }
                     Err(e) => {
-                        println!("error: {:?}", e);
+                        tracking::track_error(
+                            format!("Error serializing player: {:?}", e).as_str(),
+                        )
+                        .await;
                         format!("Something went wrong")
                     }
                 }
             }
             None => {
-                redis::incr(STEAM_PROFILE_FETCH_ERROR_KEY);
+                tracking::track_error("Could not extract steam id from html").await;
                 format!("Could not extract steam id from html")
             }
         },
         Err(e) => {
-            println!("error: {:?}", e);
+            tracking::track_error(format!("Error fetching url({:?}): {:?}", url, e).as_str()).await;
             format!("Something went wrong")
         }
     }

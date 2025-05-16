@@ -29,7 +29,7 @@ watch-frontend: build-frontend
 	while inotifywait -r frontend/src frontend/assets shared/src -e modify; do { make build-frontend; }; done
 
 start-server:
-	REDIS_URL="redis://127.0.0.1" ROCKET_ADDRESS=0.0.0.0 ROCKET_PORT=8000 cargo run
+	PLAUSIBLE_DOMAIN="https://tracking.maex.me" REDIS_URL="redis://127.0.0.1" ROCKET_ADDRESS=0.0.0.0 ROCKET_PORT=8000 cargo run
 
 docker:
 	docker build -t mstruebing/profile-peek .
