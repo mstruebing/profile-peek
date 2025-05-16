@@ -20,7 +20,13 @@
         { "rel": "icon", "type": "image/ico", "href": "/assets/favicon.ico" },
         { "rel": "stylesheet", "href": "/assets/styles.css" }
       ],
-      "script": []
+      "script": [
+          {
+              "defer": true,
+              "data-domain": "profile-peek.com",
+              "src": "https://tracking.maex.me/js/script.js"
+          }
+      ]
     },
     "router": {
       "useHashRouting": false
