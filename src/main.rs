@@ -94,7 +94,8 @@ async fn handle_new_player(id: &str, url: &str) -> String {
                 }
             }
             None => {
-                tracking::track_error("Could not extract steam id from html").await;
+                tracking::track_error(&format!("Could not extract steam id from html: {:?}", url))
+                    .await;
                 format!("Could not extract steam id from html")
             }
         },
