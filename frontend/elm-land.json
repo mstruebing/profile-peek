@@ -24,7 +24,7 @@
           {
               "defer": true,
               "data-domain": "profile-peek.com",
-              "src": "https://tracking.maex.me/js/script.js"
+              "src": "https://tracking.maex.me/js/script.outbound-links.pageview-props.tagged-events.js"
           }
       ]
     },
