@@ -14,7 +14,22 @@
       "meta": [
         { "charset": "UTF-8" },
         { "http-equiv": "X-UA-Compatible", "content": "IE=edge" },
-        { "name": "viewport", "content": "width=device-width, initial-scale=1.0" }
+        { "name": "viewport", "content": "width=device-width, initial-scale=1.0" },
+        { "name": "title", "content": "Profile-Peek — Easy Access to Player Profiles Across Platforms" },
+        { "name": "description", "content": "Quickly search players by their Steam profile and access links to Leetify, CSStats, and more platforms coming soon." },
+        { "name": "keywords", "content": "CS:GO, Steam, Leetify, CSStats, player profiles, Faceit, Esportal, live match tracking" },
+        { "name": "author", "content": "Max Strübing" },
+        { "name": "robots", "content": "index, follow" },
+        { "property": "og:type", "content": "website" },
+        { "property": "og:url", "content": "https://profile-peek.com" },
+        { "property": "og:title", "content": "Profile-Peek — Easy Access to Player Profiles Across Platforms" },
+        { "property": "og:description", "content": "Quickly search players by their Steam profile and access links to Leetify, CSStats, and more platforms coming soon." },
+        { "property": "og:image", "content": "https://yourwebsite.com/og-image.png" },
+        { "property": "twitter:card", "content": "summary_large_image" },
+        { "property": "twitter:url", "content": "https://profile-peek.com.com" },
+        { "property": "twitter:title", "content": "Profile-Peek — Easy Access to Player Profiles Across Platforms" },
+        { "property": "twitter:description", "content": "Quickly search players by their Steam profile and access links to Leetify, CSStats, and more platforms coming soon." },
+        { "property": "twitter:image", "content": "https://profile-peek.com/assets/logo-big.png" }
       ],
       "link": [
         { "rel": "icon", "type": "image/ico", "href": "/assets/favicon.ico" },

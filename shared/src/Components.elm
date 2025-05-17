@@ -73,6 +73,7 @@ type IconType
     | Leetify
     | CsStats
     | ProfilePeek
+    | Faceit
 
 
 icon : Maybe IconType -> Int -> Int -> Html msg
@@ -108,6 +109,9 @@ iconMapping iconType =
         ProfilePeek ->
             API.assetUrl ++ "/icons/logo-button.svg"
 
+        Faceit ->
+            API.assetUrl ++ "/icons/faceit.svg"
+
 
 stringToIconType : String -> Maybe IconType
 stringToIconType str =
@@ -123,6 +127,9 @@ stringToIconType str =
 
         "ProfilePeek" ->
             Just ProfilePeek
+
+        "Faceit" ->
+            Just Faceit
 
         _ ->
             Nothing
@@ -142,6 +149,9 @@ iconTypeToString iconType =
 
         ProfilePeek ->
             "ProfilePeek"
+
+        Faceit ->
+            "Faceit"
 
 
 textLink : String -> String -> Html msg
