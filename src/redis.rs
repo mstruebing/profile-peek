@@ -1,12 +1,12 @@
+use crate::env;
 use r2d2::Pool;
 use r2d2_redis::redis::{parse_redis_url, Commands};
 use r2d2_redis::RedisConnectionManager;
-use std::env;
 
 type RedisPool = Pool<RedisConnectionManager>;
 
 fn create_pool() -> RedisPool {
-    let redis_url = env::var("REDIS_URL").expect("missing environment variable REDIS_URL");
+    let redis_url = env::get("REDIS_URL");
     let manager = RedisConnectionManager::new(parse_redis_url(&redis_url).unwrap())
         .expect("Invalid connection URL");
 

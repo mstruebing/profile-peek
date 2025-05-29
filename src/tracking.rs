@@ -2,22 +2,19 @@ use reqwest::Client;
 use serde_json::json;
 use std::collections::HashMap;
 
-pub fn get_domain() -> String {
-    "profile-peek.com".to_string()
-}
+use crate::env;
 
 async fn send_event(event_name: &str, props: HashMap<String, String>) {
     let client = Client::new();
-    let domain = get_domain();
     let body = json!({
         "name": event_name,
         "url": "https://profile-peek.com/backend",
-        "domain": domain,
+        "domain": "profile-peek.com",
         "props": props,
     });
 
     let response = client
-        .post("https://tracking.maex.me/api/event")
+        .post(env::get("TRACKING_URL"))
         .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36")
         .header("X-Forwarded-For", "127.0.0.1")
         .json(&body)
@@ -35,13 +32,11 @@ async fn send_event(event_name: &str, props: HashMap<String, String>) {
     }
 }
 
-pub async fn track_cache_hit(id: &str, url: &str) {
+pub async fn track_cache_hit(url: &str) {
     let mut props = HashMap::new();
-    props.insert("id".to_string(), id.to_string());
     props.insert("url".to_string(), url.to_string());
 
     send_event("cache_hit", props).await;
-    println!("Cache hit tracked for id: {} and url: {}", id, url);
 }
 
 pub async fn track_search_request(url: &str) {
@@ -49,7 +44,6 @@ pub async fn track_search_request(url: &str) {
     props.insert("url".to_string(), url.to_string());
 
     send_event("search_request", props).await;
-    println!("Search request tracked for url: {}", url);
 }
 
 pub async fn track_error(msg: &str) {
@@ -57,5 +51,4 @@ pub async fn track_error(msg: &str) {
     props.insert("msg".to_string(), msg.to_string());
 
     send_event("error", props).await;
-    println!("Error tracked: {}", msg);
 }
