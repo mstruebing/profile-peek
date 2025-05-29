@@ -1,27 +1,53 @@
-use regex::Regex;
 use reqwest::Url;
 
-pub fn get_steam_id_from_html(lines: &str) -> Option<String> {
-    let target_line = lines.lines().find(|line| line.contains("steamid"));
-    let re = Regex::new(r#"^.*"steamid":"(\d*)".*$"#).unwrap();
-    let Some(caps) = re.captures(target_line?) else {
-        panic!("Could not extract steam id");
-    };
+use crate::env;
 
-    let steam_id = &caps[1];
-    Some(steam_id.to_string())
+/// if a url is a vanity url
+/// vanity url is a url that looks like this: https://steamcommunity.com/id/username
+pub fn is_vanity_url(url: &str) -> bool {
+    let parsed_url = Url::parse(url).unwrap();
+    let segments: Vec<&str> = parsed_url.path_segments().unwrap().collect();
+    segments.len() >= 2 && segments[0] == "id"
 }
 
-pub fn get_id_from_url(url: &str) -> Option<String> {
+pub async fn get_steam_id_from_vanity_url(url: &str) -> Option<String> {
+    let username = get_username_from_vanity_url(url);
+
+    if let Some(username) = username {
+        let api_url = format!(
+            "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key={}&vanityurl={}",
+            env::get("STEAM_API_KEY"),
+            username
+        );
+        let response = reqwest::get(&api_url).await.ok()?;
+
+        let json: serde_json::Value = response.json().await.ok()?;
+        if let Some(steam_id) = json["response"]["steamid"].as_str() {
+            return Some(steam_id.to_string());
+        }
+    }
+
+    None
+}
+
+pub fn get_steam_id_from_non_vanity_url(url: &str) -> Option<String> {
     let parsed_url = Url::parse(url).unwrap();
+    let segments: Vec<&str> = parsed_url.path_segments().unwrap().collect();
 
-    let ab = parsed_url
-        .path_segments()?
-        .enumerate()
-        .find(|(i, _segment)| *i == 1);
+    if segments.len() < 2 || segments[0] != "profiles" {
+        None
+    } else {
+        Some(segments[1].to_string())
+    }
+}
 
-    match ab {
-        Some((_, segment)) => Some(segment.to_string()),
-        None => None,
+fn get_username_from_vanity_url(url: &str) -> Option<String> {
+    let parsed_url = Url::parse(url).unwrap();
+    let segments: Vec<&str> = parsed_url.path_segments().unwrap().collect();
+
+    if segments.len() < 2 || segments[0] != "id" {
+        None
+    } else {
+        Some(segments[1].to_string())
     }
 }
