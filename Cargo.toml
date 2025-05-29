@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-openssl = { version = "0.10.72", features = ["vendored"] }
+openssl = { version = "0.10.73", features = ["vendored"] }
 regex = "1.11.1"
 reqwest = { version = "0.12.16", features = ["blocking", "json"] }
 rocket = "0.5.1"
