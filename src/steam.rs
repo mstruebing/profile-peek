@@ -51,3 +51,18 @@ fn get_username_from_vanity_url(url: &str) -> Option<String> {
         Some(segments[1].to_string())
     }
 }
+
+pub fn normalize_url(url: &str) -> Result<String, String> {
+    let mut parsed_url = Url::parse(url).unwrap();
+    parsed_url.set_query(None);
+    parsed_url.set_fragment(None);
+
+    let segments: Vec<&str> = parsed_url.path_segments().unwrap().collect();
+    if segments.len() >= 2 && (segments[0] == "id" || segments[0] == "profiles") {
+        let base_path = format!("{}/{}", segments[0], segments[1]);
+        parsed_url.set_path(&base_path);
+        return Ok(parsed_url.to_string());
+    }
+
+    Err("Invalid URL format".to_string())
+}
