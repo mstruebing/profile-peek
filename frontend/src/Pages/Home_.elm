@@ -163,7 +163,8 @@ searchBox model =
                 , style "margin" "0 auto"
                 ]
                 [ Html.input
-                    [ placeholder "Enter the Steam profile URL"
+                    [ placeholder "Enter the Steam Profile URL"
+                    , Html.Attributes.name "steam profile url"
                     , autofocus True
                     , onInput UpdateInput
                     , style "max-width" "500px"
@@ -279,8 +280,8 @@ buyMeACoffee =
         [ Html.img
             [ Html.Attributes.src "https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
             , Html.Attributes.alt "Buy Me A Coffee"
-            , Html.Attributes.style "height" "40px"
-            , Html.Attributes.style "width" "auto"
+            , Html.Attributes.height 40
+            , Html.Attributes.width 142
             ]
             []
         ]

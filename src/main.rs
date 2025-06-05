@@ -4,12 +4,18 @@ extern crate rocket;
 use rocket::fs::{relative, FileServer};
 use serde::Serialize;
 
+use rocket::fairing::{Fairing, Info, Kind};
+use rocket::http::Header;
+use rocket::{Request, Response};
+
 mod cors;
 mod env;
 mod faceit;
 mod redis;
 mod steam;
 mod tracking;
+
+pub struct CacheFairing;
 
 #[derive(Serialize)]
 struct Player {
@@ -22,6 +28,27 @@ struct Player {
 struct Site {
     url: String,
     title: String,
+}
+
+#[rocket::async_trait]
+impl Fairing for CacheFairing {
+    fn info(&self) -> Info {
+        Info {
+            name: "Add Cache-Control Header",
+            kind: Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
+        // Add cache headers except for the player route
+        if !request.uri().path().starts_with("/player")
+            && response
+                .content_type()
+                .map_or(false, |ct| ct.is_binary() || ct.is_text())
+        {
+            response.set_header(Header::new("Cache-Control", "public, max-age=31536000"));
+        }
+    }
 }
 
 /// Catches all OPTION requests in order to get the CORS related Fairing triggered.
@@ -38,10 +65,12 @@ fn rocket() -> _ {
     match rocket_env.as_str() {
         "production" => rocket::build()
             .attach(cors::Cors)
+            .attach(CacheFairing)
             .mount("/player", routes![player_route, all_options])
             .mount("/", FileServer::from("/www/public")),
         _ => rocket::build()
             .attach(cors::Cors)
+            .attach(CacheFairing)
             .mount("/player", routes![player_route, all_options])
             .mount("/", FileServer::from(relative!("frontend/dist"))),
     }
