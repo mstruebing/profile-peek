@@ -41,11 +41,7 @@ impl Fairing for CacheFairing {
 
     async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
         // Add cache headers except for the player route
-        if !request.uri().path().starts_with("/player")
-            && response
-                .content_type()
-                .map_or(false, |ct| ct.is_binary() || ct.is_text())
-        {
+        if !request.uri().path().starts_with("/player") {
             response.set_header(Header::new("Cache-Control", "public, max-age=31536000"));
         }
     }
