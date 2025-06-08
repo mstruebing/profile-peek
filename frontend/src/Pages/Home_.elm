@@ -94,7 +94,7 @@ view model =
             , style "flex-direction" "column"
             , style "justify-content" "space-between"
             , style "gap" "50px"
-            , style "margin-top"
+            , style "padding-top"
                 (if model.response == RemoteData.NotAsked then
                     "40vh"
 
