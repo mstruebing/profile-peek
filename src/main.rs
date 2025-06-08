@@ -20,7 +20,7 @@ pub struct CacheFairing;
 #[derive(Serialize)]
 struct Player {
     steam_id: String,
-    faceit_data: Option<faceit::FaceitResponse>,
+    faceit_data: Option<faceit::FaceitData>,
     sites: Vec<Site>,
 }
 
@@ -125,7 +125,7 @@ async fn handle_new_player(steam_id: &str, url: &str) -> String {
     }
 }
 
-fn create_player(steam_id: &str, faceit_data: Option<faceit::FaceitResponse>) -> Player {
+fn create_player(steam_id: &str, faceit_data: Option<faceit::FaceitAPIResponse>) -> Player {
     let mut sites = vec![
         Site {
             url: format!("https://steamcommunity.com/profiles/{}", steam_id),
@@ -153,7 +153,7 @@ fn create_player(steam_id: &str, faceit_data: Option<faceit::FaceitResponse>) ->
 
     Player {
         steam_id: steam_id.to_string(),
-        faceit_data,
+        faceit_data: faceit::from_api(faceit_data),
         sites,
     }
 }

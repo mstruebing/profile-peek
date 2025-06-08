@@ -1,4 +1,4 @@
-module API exposing (Response, Site, assetUrl, baseUrl, playerUrl, responseDecoder, responseEncoder, siteDecoder, siteEncoder, sitesDecoder)
+module API exposing (FaceitData, Response, Site, assetUrl, baseUrl, playerUrl, responseDecoder, responseEncoder, siteDecoder, siteEncoder, sitesDecoder)
 
 import Json.Decode exposing (Decoder, field)
 import Json.Encode
@@ -11,6 +11,16 @@ type alias Site =
 type alias Response =
     { steam_id : String
     , sites : List Site
+    , faceitData : Maybe FaceitData
+    }
+
+
+type alias FaceitData =
+    { nickname : String
+    , avatar : String
+    , country : String
+    , elo : Int
+    , level : Int
     }
 
 
@@ -31,9 +41,10 @@ assetUrl =
 
 responseDecoder : Decoder Response
 responseDecoder =
-    Json.Decode.map2 Response
+    Json.Decode.map3 Response
         (field "steam_id" Json.Decode.string)
         sitesDecoder
+        faceitDecoder
 
 
 sitesDecoder : Decoder (List Site)
@@ -62,3 +73,18 @@ siteEncoder site =
         [ ( "title", Json.Encode.string site.title )
         , ( "url", Json.Encode.string site.url )
         ]
+
+
+faceitDecoder : Decoder (Maybe FaceitData)
+faceitDecoder =
+    field "faceit_data" (Json.Decode.maybe faceitDataDecoder)
+
+
+faceitDataDecoder : Decoder FaceitData
+faceitDataDecoder =
+    Json.Decode.map5 FaceitData
+        (field "nickname" Json.Decode.string)
+        (field "avatar" Json.Decode.string)
+        (field "country" Json.Decode.string)
+        (field "elo" Json.Decode.int)
+        (field "level" Json.Decode.int)

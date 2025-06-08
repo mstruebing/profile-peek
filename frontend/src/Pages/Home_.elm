@@ -1,9 +1,9 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
-import API exposing (responseDecoder)
+import API exposing (Response, Site, responseDecoder)
 import Components exposing (textLink)
 import Html exposing (Html)
-import Html.Attributes exposing (autofocus, disabled, placeholder, style)
+import Html.Attributes exposing (align, autofocus, disabled, placeholder, style)
 import Html.Events exposing (onInput, onSubmit)
 import Http exposing (Error(..))
 import Page exposing (Page)
@@ -11,16 +11,6 @@ import Platform.Cmd as Cmd
 import RemoteData exposing (RemoteData)
 import Url exposing (percentEncode)
 import View exposing (View)
-
-
-type alias Response =
-    { steam_id : String
-    , sites : List Site
-    }
-
-
-type alias Site =
-    { title : String, url : String }
 
 
 page : Page Model Msg
@@ -75,7 +65,7 @@ update msg model =
             ( { model | input = input }, Cmd.none )
 
         Submit ->
-            ( { model | response = RemoteData.Loading }, Http.get { url = "/player/" ++ percentEncode model.input, expect = Http.expectJson GotResult responseDecoder } )
+            ( { model | response = RemoteData.Loading }, Http.get { url = API.playerUrl ++ "/" ++ percentEncode model.input, expect = Http.expectJson GotResult responseDecoder } )
 
         GotResult (Ok response) ->
             ( { model | response = RemoteData.Success response }, Cmd.none )
@@ -103,6 +93,7 @@ view model =
             , style "display" "flex"
             , style "flex-direction" "column"
             , style "justify-content" "space-between"
+            , style "gap" "50px"
             , style "margin-top"
                 (if model.response == RemoteData.NotAsked then
                     "40vh"
@@ -218,19 +209,68 @@ searchResults model =
         RemoteData.Success response ->
             Html.div
                 [ style "display" "flex"
+                , style "flex-direction" "column"
                 , style "align-items" "center"
                 , style "justify-content" "center"
                 , style "gap" "20px"
                 ]
-                (response.sites
-                    |> List.map
-                        (\site ->
-                            Components.link site.url (Components.icon (Components.stringToIconType site.title) 40 40)
-                        )
-                )
+                [ faceitComponent response.faceitData
+                , linkList response.sites
+                ]
 
         RemoteData.Failure error ->
             Html.text (errorToString error)
+
+
+linkList : List Site -> Html msg
+linkList sites =
+    Html.div
+        [ style "display" "flex"
+        , style "align-items" "center"
+        , style "justify-content" "center"
+        , style "gap" "20px"
+        ]
+        (sites
+            |> List.map
+                (\site ->
+                    Components.link site.url (Components.icon (Components.stringToIconType site.title) 40 40)
+                )
+        )
+
+
+faceitComponent : Maybe API.FaceitData -> Html msg
+faceitComponent faceitData =
+    case faceitData of
+        Nothing ->
+            Html.text ""
+
+        Just data ->
+            Html.div
+                [ style "display" "flex"
+                , style "flex-direction" "column"
+                , style "align-items" "center"
+                , style "justify-content" "center"
+                , style "gap" "10px"
+                ]
+                [ Html.img
+                    [ Html.Attributes.src data.avatar
+                    , Html.Attributes.alt "Faceit Avatar"
+                    , style "width" "100px"
+                    , style "height" "100px"
+                    ]
+                    []
+                , Html.div
+                    [ style "display" "flex", style "align-items" "center", style "gap" "10px" ]
+                    [ Html.img
+                        [ Html.Attributes.src (API.assetUrl ++ "/icons/faceit/level" ++ String.fromInt data.level ++ ".svg")
+                        , Html.Attributes.alt "Faceit Level"
+                        , style "width" "30px"
+                        , style "height" "30px"
+                        ]
+                        []
+                    , Html.p [ style "color" "white" ] [ Html.text <| String.fromInt data.elo ]
+                    ]
+                ]
 
 
 errorToString : Http.Error -> String

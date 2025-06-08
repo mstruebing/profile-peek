@@ -4,7 +4,16 @@ use serde::{Deserialize, Serialize};
 use crate::env;
 
 #[derive(Deserialize, Serialize)]
-pub struct FaceitResponse {
+pub struct FaceitData {
+    pub nickname: String,
+    pub avatar: Option<String>,
+    pub country: String,
+    pub level: u8,
+    pub elo: u16,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct FaceitAPIResponse {
     pub player_id: String,
     pub nickname: String,
     pub avatar: Option<String>,
@@ -21,7 +30,8 @@ pub struct FaceitResponse {
     pub faceit_url: String,
     pub membership_type: Option<String>,
     pub cover_featured_image: Option<String>,
-    pub infractions: Option<serde_json::Value>, // If the structure is unknown
+    // If the structure is unknown
+    pub infractions: Option<serde_json::Value>,
     pub verified: bool,
     pub activated_at: String,
 }
@@ -54,7 +64,7 @@ pub struct Settings {
     pub language: String,
 }
 
-pub async fn get_faceit_data(steam_id: &str) -> Option<FaceitResponse> {
+pub async fn get_faceit_data(steam_id: &str) -> Option<FaceitAPIResponse> {
     let api_url = format!(
         "https://open.faceit.com/data/v4/players?game=csgo&game_player_id={}",
         steam_id
@@ -71,7 +81,7 @@ pub async fn get_faceit_data(steam_id: &str) -> Option<FaceitResponse> {
     match client.get(&api_url).headers(headers).send().await {
         Ok(response) => {
             if response.status().is_success() {
-                match response.json::<FaceitResponse>().await {
+                match response.json::<FaceitAPIResponse>().await {
                     Ok(data) => Some(data),
                     Err(_) => None,
                 }
@@ -80,5 +90,25 @@ pub async fn get_faceit_data(steam_id: &str) -> Option<FaceitResponse> {
             }
         }
         Err(_) => None,
+    }
+}
+
+pub fn from_api(data: Option<FaceitAPIResponse>) -> Option<FaceitData> {
+    match data {
+        Some(d) => {
+            let (level, elo) = match d.games.cs2 {
+                Some(game) => (game.skill_level, game.faceit_elo),
+                None => (0, 0),
+            };
+
+            Some(FaceitData {
+                nickname: d.nickname,
+                avatar: d.avatar,
+                country: d.country,
+                level,
+                elo,
+            })
+        }
+        _ => None,
     }
 }
