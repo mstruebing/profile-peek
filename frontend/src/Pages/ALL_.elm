@@ -1,6 +1,6 @@
-module Pages.Home_ exposing (Model, Msg, page)
+module Pages.ALL_ exposing (Model, Msg, page)
 
-import API exposing (Response)
+import API exposing (Response, Site, responseDecoder)
 import Components exposing (textLink)
 import Effect exposing (Effect)
 import Html exposing (Html)
@@ -12,10 +12,11 @@ import RemoteData exposing (RemoteData)
 import Route exposing (Route)
 import Route.Path as Path
 import Shared
+import Url exposing (percentEncode)
 import View exposing (View)
 
 
-page : Shared.Model -> Route () -> Page Model Msg
+page : Shared.Model -> Route { all_ : List String } -> Page Model Msg
 page _ route =
     Page.new
         { init = init route
@@ -35,11 +36,20 @@ type alias Model =
     }
 
 
-init : Route () -> () -> ( Model, Effect Msg )
-init _ () =
-    ( { response = RemoteData.NotAsked, input = "" }
-    , Effect.none
+init : Route { all_ : List String } -> () -> ( Model, Effect Msg )
+init route () =
+    ( { response = RemoteData.Loading, input = routeToPlayerUrl route }
+    , Effect.sendCmd <|
+        Http.get
+            { url = API.playerUrl ++ "/" ++ percentEncode (routeToPlayerUrl route)
+            , expect = Http.expectJson GotResult responseDecoder
+            }
     )
+
+
+routeToPlayerUrl : Route { all_ : List String } -> String
+routeToPlayerUrl route =
+    String.slice 1 (String.length route.url.path) route.url.path
 
 
 
@@ -113,7 +123,7 @@ view model =
                     "40vh"
                 )
             ]
-            [ searchBox model ]
+            [ searchBox model, searchResults model ]
         , footer
         ]
     }
@@ -201,6 +211,101 @@ searchBox model =
                 ]
             ]
         ]
+
+
+searchResults : Model -> Html Msg
+searchResults model =
+    case model.response of
+        RemoteData.NotAsked ->
+            Html.text ""
+
+        RemoteData.Loading ->
+            Html.text ""
+
+        RemoteData.Success response ->
+            Html.div
+                [ style "display" "flex"
+                , style "flex-direction" "column"
+                , style "align-items" "center"
+                , style "justify-content" "center"
+                , style "gap" "20px"
+                ]
+                [ faceitComponent response.faceitData
+                , linkList response.sites
+                ]
+
+        RemoteData.Failure error ->
+            Html.text (errorToString error)
+
+
+linkList : List Site -> Html msg
+linkList sites =
+    Html.div
+        [ style "display" "flex"
+        , style "align-items" "center"
+        , style "justify-content" "center"
+        , style "gap" "20px"
+        ]
+        (sites
+            |> List.map
+                (\site ->
+                    Components.link site.url (Components.icon (Components.stringToIconType site.title) 40 40)
+                )
+        )
+
+
+faceitComponent : Maybe API.FaceitData -> Html msg
+faceitComponent faceitData =
+    case faceitData of
+        Nothing ->
+            Html.text ""
+
+        Just data ->
+            Html.div
+                [ style "display" "flex"
+                , style "flex-direction" "column"
+                , style "align-items" "center"
+                , style "justify-content" "center"
+                , style "gap" "10px"
+                ]
+                [ Html.img
+                    [ Html.Attributes.src data.avatar
+                    , Html.Attributes.alt "Faceit Avatar"
+                    , style "width" "100px"
+                    , style "height" "100px"
+                    ]
+                    []
+                , Html.div
+                    [ style "display" "flex", style "align-items" "center", style "gap" "10px" ]
+                    [ Html.img
+                        [ Html.Attributes.src (API.assetUrl ++ "/icons/faceit/level" ++ String.fromInt data.level ++ ".svg")
+                        , Html.Attributes.alt "Faceit Level"
+                        , style "width" "30px"
+                        , style "height" "30px"
+                        ]
+                        []
+                    , Html.p [ style "color" "white" ] [ Html.text <| String.fromInt data.elo ]
+                    ]
+                ]
+
+
+errorToString : Http.Error -> String
+errorToString err =
+    case err of
+        Timeout ->
+            "Timeout exceeded"
+
+        NetworkError ->
+            "Network error"
+
+        BadStatus resp ->
+            String.fromInt resp
+
+        BadBody text ->
+            "Unexpected response from api: " ++ text
+
+        BadUrl url ->
+            "Malformed url: " ++ url
 
 
 footer : Html Msg
