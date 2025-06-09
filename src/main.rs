@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
-use rocket::fs::{relative, FileServer};
+use rocket::fs::{relative, FileServer, NamedFile};
 use serde::Serialize;
 
 use rocket::fairing::{Fairing, Info, Kind};
@@ -53,6 +53,13 @@ fn all_options() {
     /* Intentionally left empty */
 }
 
+#[catch(default)]
+async fn default_catch(_req: &Request<'_>) -> Option<NamedFile> {
+    NamedFile::open(relative!("frontend/dist/index.html"))
+        .await
+        .ok()
+}
+
 #[launch]
 fn rocket() -> _ {
     env::ensure_set();
@@ -63,12 +70,14 @@ fn rocket() -> _ {
             .attach(cors::Cors)
             .attach(CacheFairing)
             .mount("/player", routes![player_route, all_options])
-            .mount("/", FileServer::from("/www/public")),
+            .mount("/", FileServer::from("/www/public"))
+            .register("/", catchers![default_catch]),
         _ => rocket::build()
             .attach(cors::Cors)
             .attach(CacheFairing)
             .mount("/player", routes![player_route, all_options])
-            .mount("/", FileServer::from(relative!("frontend/dist"))),
+            .mount("/", FileServer::from(relative!("frontend/dist")))
+            .register("/", catchers![default_catch]),
     }
 }
 
