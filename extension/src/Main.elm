@@ -68,7 +68,8 @@ init flags =
             { url = playerUrl ++ "/" ++ percentEncode flags.url
             , expect = Http.expectJson GotResult responseDecoder
             }
-        , requestLocalStorageItem flags.url
+        , normalizeUrl flags.url
+            |> requestLocalStorageItem
         ]
     )
 

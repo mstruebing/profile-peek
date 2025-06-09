@@ -2,6 +2,7 @@ module API exposing (FaceitData, Response, Site, assetUrl, baseUrl, playerUrl, r
 
 import Json.Decode exposing (Decoder, field)
 import Json.Encode
+import Json.Encode.Extra
 
 
 type alias Site =
@@ -64,6 +65,7 @@ responseEncoder response =
     Json.Encode.object
         [ ( "steam_id", Json.Encode.string response.steam_id )
         , ( "sites", Json.Encode.list siteEncoder response.sites )
+        , ( "faceit_data", Json.Encode.Extra.maybe faceitDataEncoder response.faceitData )
         ]
 
 
@@ -88,3 +90,14 @@ faceitDataDecoder =
         (field "country" Json.Decode.string)
         (field "elo" Json.Decode.int)
         (field "level" Json.Decode.int)
+
+
+faceitDataEncoder : FaceitData -> Json.Encode.Value
+faceitDataEncoder faceitData =
+    Json.Encode.object
+        [ ( "nickname", Json.Encode.string faceitData.nickname )
+        , ( "avatar", Json.Encode.string faceitData.avatar )
+        , ( "country", Json.Encode.string faceitData.country )
+        , ( "elo", Json.Encode.int faceitData.elo )
+        , ( "level", Json.Encode.int faceitData.level )
+        ]
