@@ -4,6 +4,7 @@ import API exposing (Response, baseUrl, playerUrl, responseDecoder, responseEnco
 import Browser
 import Components exposing (icon, link, logoButton, sideBar, stringToIconType)
 import Html exposing (Html)
+import Html.Attributes
 import Http exposing (Error(..))
 import Json.Decode exposing (decodeString)
 import Json.Encode
@@ -22,6 +23,21 @@ port setLocalStorageItem : ( String, Json.Encode.Value ) -> Cmd msg
 
 type alias Flags =
     { url : String }
+
+
+
+-- https://steamcommunity.com/id/insi--/inventory/
+-- -> https://steamcommunity.com/id/insi--
+
+
+normalizeUrl : String -> String
+normalizeUrl url =
+    case String.split "/" url of
+        [] ->
+            url
+
+        parts ->
+            String.join "/" (List.take 5 parts)
 
 
 
@@ -45,7 +61,7 @@ type alias Model =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { url = flags.url
+    ( { url = normalizeUrl flags.url
       , response = RemoteData.NotAsked
       }
     , Cmd.batch
@@ -104,7 +120,7 @@ view model =
             Html.text ""
 
         RemoteData.Success response ->
-            sideBar <| link baseUrl logoButton :: responseToLinks response
+            sideBar <| link (baseUrl ++ "/" ++ model.url) logoButton :: responseToLinks response
 
         RemoteData.Failure _ ->
             Html.text ""
@@ -114,7 +130,26 @@ responseToLinks : Response -> List (Html msg)
 responseToLinks response =
     response.sites
         |> List.filter (\s -> s.title /= "Steam")
-        |> List.map
-            (\site ->
+        |> List.map (siteToLink response.faceitData)
+
+
+siteToLink : Maybe API.FaceitData -> API.Site -> Html msg
+siteToLink faceitData site =
+    if site.title == "Faceit" then
+        case faceitData of
+            Just data ->
+                link site.url
+                    (Html.img
+                        [ Html.Attributes.src (API.assetUrl ++ "/icons/faceit/level" ++ String.fromInt data.level ++ ".svg")
+                        , Html.Attributes.alt "Faceit Level"
+                        , Html.Attributes.style "width" "30px"
+                        , Html.Attributes.style "height" "30px"
+                        ]
+                        []
+                    )
+
+            Nothing ->
                 link site.url (icon (stringToIconType site.title) 20 20)
-            )
+
+    else
+        link site.url (icon (stringToIconType site.title) 20 20)

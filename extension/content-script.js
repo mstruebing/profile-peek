@@ -32,16 +32,15 @@ chrome.runtime.sendMessage({ type: 'INJECT_ELM' }, (_response) => {
         });
 
         setTimeout(() => {
+            document.querySelectorAll(".profile-peek-icon").forEach((icon) => {
+                icon.addEventListener("mouseover", (e) => {
+                    e.target.style.scale = "1.5";
+                })
 
-        document.querySelectorAll(".profile-peek-icon").forEach((icon) => {
-            icon.addEventListener("mouseover", (e) => {
-                e.target.style.scale = "1.5";
+                icon.addEventListener("mouseout", (e) => {
+                    e.target.style.scale = "1";
+                })
             })
-
-            icon.addEventListener("mouseout", (e) => {
-                e.target.style.scale = "1";
-            })
-        })
         }, 1000)
     } else {
         console.error('Elm.Main not found');
