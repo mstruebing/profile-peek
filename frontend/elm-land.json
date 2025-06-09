@@ -32,6 +32,7 @@
         { "property": "twitter:image", "content": "https://profile-peek.com/assets/logo-big.png" }
       ],
       "link": [
+        { "rel": "icon", "type": "image/x-icon", "href": "https://profile-peek.com/assets/favicon.ico" },
         { "rel": "preload", "as": "image", "href": "https://profile-peek.com/assets/icons/logo.svg" },
         { "rel": "preconnect", "href": "https://cdn.buymeacoffee.com" },
         { "rel": "preload", "as": "style", "onload": "this.rel = 'stylesheet'", "href": "https://profile-peek.com/assets/styles.css" }
