@@ -4,7 +4,6 @@ import API exposing (Response, baseUrl, playerUrl, responseDecoder, responseEnco
 import Browser
 import Components exposing (icon, link, logoButton, sideBar, stringToIconType)
 import Html exposing (Html)
-import Html.Attributes
 import Http exposing (Error(..))
 import Json.Decode exposing (decodeString)
 import Json.Encode
@@ -139,14 +138,7 @@ siteToLink faceitData site =
         case faceitData of
             Just data ->
                 link site.url
-                    (Html.img
-                        [ Html.Attributes.src (API.assetUrl ++ "/icons/faceit/level" ++ String.fromInt data.level ++ ".svg")
-                        , Html.Attributes.alt "Faceit Level"
-                        , Html.Attributes.style "width" "30px"
-                        , Html.Attributes.style "height" "30px"
-                        ]
-                        []
-                    )
+                    (icon (stringToIconType <| "Level" ++ String.fromInt data.level) 30 30)
 
             Nothing ->
                 link site.url (icon (stringToIconType site.title) 20 20)

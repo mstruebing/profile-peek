@@ -74,6 +74,16 @@ type IconType
     | CsStats
     | ProfilePeek
     | Faceit
+    | Level1
+    | Level2
+    | Level3
+    | Level4
+    | Level5
+    | Level6
+    | Level7
+    | Level8
+    | Level9
+    | Level10
 
 
 icon : Maybe IconType -> Int -> Int -> Html msg
@@ -112,6 +122,36 @@ iconMapping iconType =
         Faceit ->
             API.assetUrl ++ "/icons/faceit.svg"
 
+        Level1 ->
+            API.assetUrl ++ "/icons/faceit/level1.svg"
+
+        Level2 ->
+            API.assetUrl ++ "/icons/faceit/level2.svg"
+
+        Level3 ->
+            API.assetUrl ++ "/icons/faceit/level3.svg"
+
+        Level4 ->
+            API.assetUrl ++ "/icons/faceit/level4.svg"
+
+        Level5 ->
+            API.assetUrl ++ "/icons/faceit/level5.svg"
+
+        Level6 ->
+            API.assetUrl ++ "/icons/faceit/level6.svg"
+
+        Level7 ->
+            API.assetUrl ++ "/icons/faceit/level7.svg"
+
+        Level8 ->
+            API.assetUrl ++ "/icons/faceit/level8.svg"
+
+        Level9 ->
+            API.assetUrl ++ "/icons/faceit/level9.svg"
+
+        Level10 ->
+            API.assetUrl ++ "/icons/faceit/level10.svg"
+
 
 stringToIconType : String -> Maybe IconType
 stringToIconType str =
@@ -130,6 +170,36 @@ stringToIconType str =
 
         "Faceit" ->
             Just Faceit
+
+        "Level1" ->
+            Just Level1
+
+        "Level2" ->
+            Just Level2
+
+        "Level3" ->
+            Just Level3
+
+        "Level4" ->
+            Just Level4
+
+        "Level5" ->
+            Just Level5
+
+        "Level6" ->
+            Just Level6
+
+        "Level7" ->
+            Just Level7
+
+        "Level8" ->
+            Just Level8
+
+        "Level9" ->
+            Just Level9
+
+        "Level10" ->
+            Just Level10
 
         _ ->
             Nothing
@@ -152,6 +222,36 @@ iconTypeToString iconType =
 
         Faceit ->
             "Faceit"
+
+        Level1 ->
+            "Level1"
+
+        Level2 ->
+            "Level2"
+
+        Level3 ->
+            "Level3"
+
+        Level4 ->
+            "Level4"
+
+        Level5 ->
+            "Level5"
+
+        Level6 ->
+            "Level6"
+
+        Level7 ->
+            "Level7"
+
+        Level8 ->
+            "Level8"
+
+        Level9 ->
+            "Level9"
+
+        Level10 ->
+            "Level10"
 
 
 textLink : String -> String -> Html msg
