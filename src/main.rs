@@ -55,9 +55,12 @@ fn all_options() {
 
 #[catch(default)]
 async fn default_catch(_req: &Request<'_>) -> Option<NamedFile> {
-    NamedFile::open(relative!("frontend/dist/index.html"))
-        .await
-        .ok()
+    match env::get("ROCKET_ENV").as_str() {
+        "production" => NamedFile::open("/www/public/index.html").await.ok(),
+        _ => NamedFile::open(relative!("frontend/dist/index.html"))
+            .await
+            .ok(),
+    }
 }
 
 #[launch]
