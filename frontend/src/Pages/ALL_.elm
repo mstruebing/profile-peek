@@ -40,11 +40,16 @@ init : Route { all_ : List String } -> () -> ( Model, Effect Msg )
 init route () =
     ( { response = RemoteData.Loading, input = routeToPlayerUrl route }
     , Effect.sendCmd <|
-        Http.get
-            { url = API.playerUrl ++ "/" ++ percentEncode (routeToPlayerUrl route)
-            , expect = Http.expectJson GotResult responseDecoder
-            }
+        getPlayerEffect (routeToPlayerUrl route)
     )
+
+
+getPlayerEffect : String -> Cmd Msg
+getPlayerEffect route =
+    Http.get
+        { url = API.playerUrl ++ "/" ++ percentEncode route
+        , expect = Http.expectJson GotResult responseDecoder
+        }
 
 
 routeToPlayerUrl : Route { all_ : List String } -> String
@@ -75,7 +80,12 @@ update msg model =
             ( { model | input = input }, Effect.none )
 
         Submit ->
-            ( { model | response = RemoteData.Loading }, Effect.pushRoutePath <| Path.ALL_ { all_ = [ model.input ] } )
+            ( { model | response = RemoteData.Loading }
+            , Effect.batch
+                [ Effect.sendCmd <| getPlayerEffect model.input
+                , Effect.pushRoutePath <| Path.ALL_ { all_ = [ model.input ] }
+                ]
+            )
 
         GotResult (Ok response) ->
             ( { model | response = RemoteData.Success response }, Effect.none )
