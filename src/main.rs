@@ -161,7 +161,16 @@ async fn old_player_route(url: &str) -> Result<String, String> {
 }
 
 async fn handle_new_player(steam_id: &str, url: &str) -> String {
-    let player = create_player(steam_id, faceit::get_faceit_data(steam_id).await);
+    let faceit_data = faceit::get_player_details(steam_id).await;
+
+    // Only get last matches if we have valid faceit data
+    let last_matches = if let Some(ref player_details) = faceit_data {
+        faceit::get_player_last_matches(&player_details.player_id).await
+    } else {
+        None
+    };
+
+    let player = create_player(steam_id, faceit_data, last_matches);
     match serde_json::to_string(&player) {
         Ok(json) => {
             redis::set(&url, &json);
@@ -176,7 +185,11 @@ async fn handle_new_player(steam_id: &str, url: &str) -> String {
     }
 }
 
-fn create_player(steam_id: &str, faceit_data: Option<faceit::FaceitAPIResponse>) -> Player {
+fn create_player(
+    steam_id: &str,
+    faceit_data: Option<faceit::FaceitPlayerDetailsAPIResponse>,
+    last_matches: Option<faceit::PlayerLastMatchesResponse>,
+) -> Player {
     let mut sites = vec![
         Site {
             url: format!("https://steamcommunity.com/profiles/{}", steam_id),
@@ -204,7 +217,7 @@ fn create_player(steam_id: &str, faceit_data: Option<faceit::FaceitAPIResponse>)
 
     Player {
         steam_id: steam_id.to_string(),
-        faceit_data: faceit::from_api(faceit_data),
+        faceit_data: faceit::from_api(faceit_data, last_matches),
         sites,
     }
 }
