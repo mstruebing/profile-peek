@@ -30,9 +30,14 @@ baseUrl =
     "https://profile-peek.com"
 
 
+apiUrl : String
+apiUrl =
+    baseUrl ++ "/api/v1"
+
+
 playerUrl : String
 playerUrl =
-    baseUrl ++ "/player"
+    apiUrl ++ "/player"
 
 
 assetUrl : String

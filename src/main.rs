@@ -72,13 +72,15 @@ fn rocket() -> _ {
         "production" => rocket::build()
             .attach(cors::Cors)
             .attach(CacheFairing)
-            .mount("/player", routes![player_route, all_options])
+            .mount("/api/v1/player", routes![player_route, all_options])
+            .mount("/player", routes![old_player_route, all_options])
             .mount("/", FileServer::from("/www/public"))
             .register("/", catchers![default_catch]),
         _ => rocket::build()
             .attach(cors::Cors)
             .attach(CacheFairing)
-            .mount("/player", routes![player_route, all_options])
+            .mount("/api/v1/player", routes![player_route, all_options])
+            .mount("/player", routes![old_player_route, all_options])
             .mount("/", FileServer::from(relative!("frontend/dist")))
             .register("/", catchers![default_catch]),
     }
@@ -86,6 +88,43 @@ fn rocket() -> _ {
 
 #[get("/<url>")]
 async fn player_route(url: &str) -> Result<String, String> {
+    tracking::track_search_request(&url).await;
+    let normalized_url = steam::normalize_url(url)?;
+
+    match redis::get(&normalized_url) {
+        Some(data) => {
+            tracking::track_cache_hit(&normalized_url).await;
+            Ok(data)
+        }
+        None => match steam::is_vanity_url(&normalized_url) {
+            true => match steam::get_steam_id_from_vanity_url(&normalized_url).await {
+                Some(steam_id) => Ok(handle_new_player(&steam_id, &normalized_url).await),
+                None => {
+                    let msg = format!(
+                        "Could not resolve steam id from vanity URL: {}",
+                        normalized_url
+                    );
+                    tracking::track_error(&msg).await;
+                    Err(msg)
+                }
+            },
+            false => match steam::get_steam_id_from_non_vanity_url(&normalized_url) {
+                Some(steam_id) => Ok(handle_new_player(&steam_id, &normalized_url).await),
+                None => {
+                    let msg = format!(
+                        "Could not resolve steam id from profile url: {}",
+                        normalized_url
+                    );
+                    tracking::track_error(&msg).await;
+                    Err(msg)
+                }
+            },
+        },
+    }
+}
+
+#[get("/<url>")]
+async fn old_player_route(url: &str) -> Result<String, String> {
     tracking::track_search_request(&url).await;
     let normalized_url = steam::normalize_url(url)?;
 
