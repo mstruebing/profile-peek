@@ -1,7 +1,7 @@
 module Pages.ALL_ exposing (Model, Msg, page)
 
 import API exposing (Response, Site, responseDecoder)
-import Components exposing (textLink)
+import Components exposing (footer)
 import Effect exposing (Effect)
 import Html exposing (Html)
 import Html.Attributes exposing (autofocus, disabled, placeholder, style, value)
@@ -318,24 +318,6 @@ errorToString err =
             "Malformed url: " ++ url
 
 
-footer : Html Msg
-footer =
-    Html.footer
-        [ style "background-color" "rgb(34, 32, 32)"
-        , style "width" "100%"
-        , style "position" "fixed"
-        , style "bottom" "0"
-        , style "display" "flex"
-        , style "align-items" "center"
-        , style "justify-content" "center"
-        , style "padding" "20px"
-        , style "gap" "50px"
-        ]
-        [ browserExtension
-        , contact
-        ]
-
-
 buyMeACoffee : Html Msg
 buyMeACoffee =
     Html.a
@@ -350,20 +332,4 @@ buyMeACoffee =
             , Html.Attributes.width 142
             ]
             []
-        ]
-
-
-browserExtension : Html Msg
-browserExtension =
-    Html.div
-        []
-        [ textLink "https://chromewebstore.google.com/detail/profile-peek/fbpcaneckpeeinnachahnnpapdiaohei" "Browser Extension"
-        ]
-
-
-contact : Html Msg
-contact =
-    Html.div
-        []
-        [ textLink "mailto:hi@profile-peek.com" "hi@profile-peek.com"
         ]
