@@ -42,8 +42,8 @@ test:
 	echo TODO
 
 request:
-	curl 'http://0.0.0.0:8000/player/https%3A%2F%2Fsteamcommunity.com%2Fid%2Finsi--'
-	curl 'http://0.0.0.0:8000/api/v1/player/https%3A%2F%2Fsteamcommunity.com%2Fid%2Finsi--'
+	# curl 'http://0.0.0.0:8000/player/https%3A%2F%2Fsteamcommunity.com%2Fid%2Finsi--' | jq
+	curl 'http://0.0.0.0:8000/api/v1/player/https%3A%2F%2Fsteamcommunity.com%2Fid%2Finsi--' | jq
 
 req:
 	curl 'https://profile-peek.com/player/https%3A%2F%2Fsteamcommunity.com%2Fid%2Finsi--'
