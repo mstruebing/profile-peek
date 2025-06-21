@@ -1,4 +1,4 @@
-module Components exposing (IconType(..), icon, link, logo, logoButton, sideBar, stringToIconType, textLink)
+module Components exposing (IconType(..), footer, icon, link, logo, logoButton, sideBar, stringToIconType, textLink)
 
 import API
 import Html exposing (Html)
@@ -73,6 +73,9 @@ type IconType
     | Leetify
     | CsStats
     | ProfilePeek
+    | X
+    | Mail
+    | Extension
     | Faceit
     | Level1
     | Level2
@@ -118,6 +121,15 @@ iconMapping iconType =
 
         ProfilePeek ->
             API.assetUrl ++ "/icons/logo-button.svg"
+
+        X ->
+            API.assetUrl ++ "/icons/x.svg"
+
+        Mail ->
+            API.assetUrl ++ "/icons/mail.svg"
+
+        Extension ->
+            API.assetUrl ++ "/icons/extension.svg"
 
         Faceit ->
             API.assetUrl ++ "/icons/faceit.svg"
@@ -220,6 +232,15 @@ iconTypeToString iconType =
         ProfilePeek ->
             "ProfilePeek"
 
+        X ->
+            "X"
+
+        Mail ->
+            "Mail"
+
+        Extension ->
+            "Extension"
+
         Faceit ->
             "Faceit"
 
@@ -263,3 +284,23 @@ textLink url text =
         , style "text-decoration" "underline"
         ]
         [ Html.text text ]
+
+
+footer : Html msg
+footer =
+    Html.footer
+        [ style "background-color" "rgb(34, 32, 32)"
+        , style "width" "100%"
+        , style "position" "fixed"
+        , style "bottom" "0"
+        , style "display" "flex"
+        , style "align-items" "center"
+        , style "justify-content" "center"
+        , style "padding" "20px"
+        , style "gap" "10px"
+        ]
+        [ link "https://chromewebstore.google.com/detail/profile-peek/fbpcaneckpeeinnachahnnpapdiaohei" <| icon (Just Extension) 30 30
+        , link "https://steamcommunity.com/groups/profile-peek" <| icon (Just Steam) 20 20
+        , link "https://x.com/ProfilePeek" <| icon (Just X) 20 20
+        , link "mailto:hi@profile-peek.com" <| icon (Just Mail) 30 30
+        ]
