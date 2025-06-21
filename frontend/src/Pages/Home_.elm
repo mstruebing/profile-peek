@@ -89,7 +89,7 @@ subscriptions _ =
 
 view : Model -> View Msg
 view model =
-    { title = "Profile-Peek"
+    { title = "Profile-Peek - Easy Access to Player Profiles Across Platforms"
     , body =
         [ header
         , Html.div
