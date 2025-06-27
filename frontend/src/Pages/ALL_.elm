@@ -241,6 +241,7 @@ searchResults model =
                 , style "gap" "20px"
                 ]
                 [ faceitComponent response.faceitData
+                , Html.hr [ style "width" "400px", style "border" "1px solid #ccc" ] []
                 , linkList response.sites
                 ]
 
@@ -268,7 +269,7 @@ faceitComponent : Maybe API.FaceitData -> Html msg
 faceitComponent faceitData =
     case faceitData of
         Nothing ->
-            Html.text ""
+            Html.p [] [ Html.text "No Faceit Data Found 🤔" ]
 
         Just data ->
             Html.div
@@ -294,7 +295,7 @@ faceitComponent faceitData =
                 , Html.div
                     [ style "display" "flex", style "gap" "8px", style "align-items" "center" ]
                     [ Html.img [ Html.Attributes.alt <| "Country: " ++ String.toUpper data.country, Html.Attributes.src ("https://flagsapi.com/" ++ String.toUpper data.country ++ "/flat/24.png") ] []
-                    , Html.p [ style "color" "white" ] [ Html.text data.nickname ]
+                    , Html.p [] [ Html.text data.nickname ]
                     ]
                 , Html.div
                     [ style "display" "flex", style "align-items" "center", style "gap" "10px" ]
@@ -305,7 +306,7 @@ faceitComponent faceitData =
                         , style "height" "30px"
                         ]
                         []
-                    , Html.p [ style "color" "white" ] [ Html.text <| String.fromInt data.elo ]
+                    , Html.p [] [ Html.text <| String.fromInt data.elo ]
                     ]
                 ]
 
