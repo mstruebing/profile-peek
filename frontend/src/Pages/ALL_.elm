@@ -276,7 +276,7 @@ faceitComponent faceitData =
                 , style "flex-direction" "column"
                 , style "align-items" "center"
                 , style "justify-content" "center"
-                , style "gap" "10px"
+                , style "gap" "12px"
                 ]
                 [ Html.img
                     [ Html.Attributes.src
@@ -291,6 +291,11 @@ faceitComponent faceitData =
                     , style "height" "100px"
                     ]
                     []
+                , Html.div
+                    [ style "display" "flex", style "gap" "8px", style "align-items" "center" ]
+                    [ Html.img [ Html.Attributes.alt <| "Country: " ++ String.toUpper data.country, Html.Attributes.src ("https://flagsapi.com/" ++ String.toUpper data.country ++ "/flat/24.png") ] []
+                    , Html.p [ style "color" "white" ] [ Html.text data.nickname ]
+                    ]
                 , Html.div
                     [ style "display" "flex", style "align-items" "center", style "gap" "10px" ]
                     [ Html.img
