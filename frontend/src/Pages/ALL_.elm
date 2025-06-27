@@ -279,7 +279,13 @@ faceitComponent faceitData =
                 , style "gap" "10px"
                 ]
                 [ Html.img
-                    [ Html.Attributes.src data.avatar
+                    [ Html.Attributes.src
+                        (if String.isEmpty data.avatar then
+                            API.assetUrl ++ "/icons/faceit/default-avatar.svg"
+
+                         else
+                            data.avatar
+                        )
                     , Html.Attributes.alt "Faceit Avatar"
                     , style "width" "100px"
                     , style "height" "100px"
