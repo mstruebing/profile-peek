@@ -42,3 +42,7 @@ body {
         margin-right: 0 !important;
     }
 }
+
+p {
+    margin: 0;
+}
