@@ -22,6 +22,7 @@ struct Player {
     steam_id: String,
     faceit_data: Option<faceit::FaceitData>,
     cs2_hours: Option<u32>,
+    account_created: Option<i64>,
     sites: Vec<Site>,
 }
 
@@ -173,10 +174,11 @@ async fn handle_new_player(steam_id: &str, url: &str) -> String {
         None
     };
 
-    // Fetch CS2 hours
+    // Fetch CS2 hours and account creation date
     let cs2_hours = steam::get_cs2_hours(steam_id).await;
+    let account_created = steam::get_account_creation_date(steam_id).await;
 
-    let player = create_player(steam_id, faceit_data, last_matches, cs2_hours);
+    let player = create_player(steam_id, faceit_data, last_matches, cs2_hours, account_created);
     match serde_json::to_string(&player) {
         Ok(json) => {
             redis::set(&url, &json);
@@ -196,6 +198,7 @@ fn create_player(
     faceit_data: Option<faceit::FaceitPlayerDetailsAPIResponse>,
     last_matches: Option<faceit::PlayerLastMatchesResponse>,
     cs2_hours: Option<u32>,
+    account_created: Option<i64>,
 ) -> Player {
     let mut sites = vec![
         Site {
@@ -226,6 +229,7 @@ fn create_player(
         steam_id: steam_id.to_string(),
         faceit_data: faceit::from_api(faceit_data, last_matches),
         cs2_hours,
+        account_created,
         sites,
     }
 }

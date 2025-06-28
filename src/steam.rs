@@ -95,3 +95,26 @@ pub async fn get_cs2_hours(steam_id: &str) -> Option<u32> {
     
     None
 }
+
+/// Fetch account creation date for a given Steam ID
+/// Returns the Unix timestamp when the account was created, or None if not found/error
+pub async fn get_account_creation_date(steam_id: &str) -> Option<i64> {
+    let api_url = format!(
+        "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={}&steamids={}",
+        env::get("STEAM_API_KEY"),
+        steam_id
+    );
+    
+    let response = reqwest::get(&api_url).await.ok()?;
+    let json: serde_json::Value = response.json().await.ok()?;
+    
+    if let Some(players) = json["response"]["players"].as_array() {
+        if let Some(player) = players.first() {
+            if let Some(timecreated) = player["timecreated"].as_i64() {
+                return Some(timecreated);
+            }
+        }
+    }
+    
+    None
+}
