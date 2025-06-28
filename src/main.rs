@@ -7,6 +7,7 @@ use serde::Serialize;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
 use rocket::{Request, Response};
+use steam::VacBanInfo;
 
 mod cors;
 mod env;
@@ -23,6 +24,7 @@ struct Player {
     faceit_data: Option<faceit::FaceitData>,
     cs2_hours: Option<u32>,
     account_created: Option<i64>,
+    vac_ban_info: Option<VacBanInfo>,
     sites: Vec<Site>,
 }
 
@@ -174,11 +176,19 @@ async fn handle_new_player(steam_id: &str, url: &str) -> String {
         None
     };
 
-    // Fetch CS2 hours and account creation date
+    // Fetch CS2 hours, account creation date, and VAC ban info
     let cs2_hours = steam::get_cs2_hours(steam_id).await;
-    let account_created = steam::get_account_creation_date(steam_id).await;
+    let steam_account_created = steam::get_account_creation_date(steam_id).await;
+    let vac_ban_info = steam::get_vac_ban_info(steam_id).await;
 
-    let player = create_player(steam_id, faceit_data, last_matches, cs2_hours, account_created);
+    let player = create_player(
+        steam_id,
+        faceit_data,
+        last_matches,
+        cs2_hours,
+        steam_account_created,
+        vac_ban_info,
+    );
     match serde_json::to_string(&player) {
         Ok(json) => {
             redis::set(&url, &json);
@@ -199,6 +209,7 @@ fn create_player(
     last_matches: Option<faceit::PlayerLastMatchesResponse>,
     cs2_hours: Option<u32>,
     account_created: Option<i64>,
+    vac_ban_info: Option<VacBanInfo>,
 ) -> Player {
     let mut sites = vec![
         Site {
@@ -230,6 +241,7 @@ fn create_player(
         faceit_data: faceit::from_api(faceit_data, last_matches),
         cs2_hours,
         account_created,
+        vac_ban_info,
         sites,
     }
 }

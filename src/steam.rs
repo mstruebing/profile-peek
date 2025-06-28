@@ -1,6 +1,14 @@
 use reqwest::Url;
+use serde::Serialize;
 
 use crate::env;
+
+#[derive(Serialize)]
+pub struct VacBanInfo {
+    is_banned: bool,
+    ban_count: u32,
+    days_since_last_ban: Option<u32>,
+}
 
 /// if a url is a vanity url
 /// vanity url is a url that looks like this: https://steamcommunity.com/id/username
@@ -75,10 +83,10 @@ pub async fn get_cs2_hours(steam_id: &str) -> Option<u32> {
         env::get("STEAM_API_KEY"),
         steam_id
     );
-    
+
     let response = reqwest::get(&api_url).await.ok()?;
     let json: serde_json::Value = response.json().await.ok()?;
-    
+
     // CS2's app ID is 730
     if let Some(games) = json["response"]["games"].as_array() {
         for game in games {
@@ -92,7 +100,7 @@ pub async fn get_cs2_hours(steam_id: &str) -> Option<u32> {
             }
         }
     }
-    
+
     None
 }
 
@@ -104,10 +112,10 @@ pub async fn get_account_creation_date(steam_id: &str) -> Option<i64> {
         env::get("STEAM_API_KEY"),
         steam_id
     );
-    
+
     let response = reqwest::get(&api_url).await.ok()?;
     let json: serde_json::Value = response.json().await.ok()?;
-    
+
     if let Some(players) = json["response"]["players"].as_array() {
         if let Some(player) = players.first() {
             if let Some(timecreated) = player["timecreated"].as_i64() {
@@ -115,6 +123,45 @@ pub async fn get_account_creation_date(steam_id: &str) -> Option<i64> {
             }
         }
     }
-    
+
+    None
+}
+
+/// Fetch VAC ban information for a given Steam ID
+/// Returns a tuple of (VAC banned, number of VAC bans, days since last ban)
+pub async fn get_vac_ban_info(steam_id: &str) -> Option<VacBanInfo> {
+    let api_url = format!(
+        "https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key={}&steamids={}",
+        env::get("STEAM_API_KEY"),
+        steam_id
+    );
+
+    let response = reqwest::get(&api_url).await.ok()?;
+    let json: serde_json::Value = response.json().await.ok()?;
+
+    if let Some(players) = json["players"].as_array() {
+        if let Some(player) = players.first() {
+            let vac_banned = player["VACBanned"].as_bool().unwrap_or(false);
+            let number_of_vac_bans = player["NumberOfVACBans"].as_u64().unwrap_or(0) as u32;
+
+            // DaysSinceLastBan is -1 if no bans, otherwise it's the number of days
+            let days_since_last_ban = if let Some(days) = player["DaysSinceLastBan"].as_i64() {
+                if days >= 0 {
+                    Some(days as u32)
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+
+            return Some(VacBanInfo {
+                is_banned: vac_banned,
+                ban_count: number_of_vac_bans,
+                days_since_last_ban,
+            });
+        }
+    }
+
     None
 }
