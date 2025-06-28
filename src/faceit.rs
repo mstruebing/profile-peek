@@ -6,29 +6,26 @@ use crate::env;
 
 #[derive(Deserialize, Serialize)]
 pub struct FaceitData {
-    pub nickname: String,
+    pub account_created: i64,
+    pub adr: f32,
     pub avatar: Option<String>,
     pub country: String,
-    pub level: u8,
-    pub elo: u16,
-    pub account_created: i64,
-
-    pub adr: f32,
-    pub wins: u8,
-    pub losses: u8,
-    pub win_rate: f32,
-
-    pub kills: u16,
     pub deaths: u16,
-    pub kd_ratio: f32,
-    pub kr_ratio: f32,
-    pub headshots: u16,
-    pub headshots_percentage: f32,
-
     pub double_kills: u16,
-    pub triple_kills: u16,
-    pub quadro_kills: u16,
+    pub elo: u16,
+    pub headshot_percentage: f32,
+    pub headshots: u16,
+    pub kd_ratio: f32,
+    pub kills: u16,
+    pub kr_ratio: f32,
+    pub level: u8,
+    pub losses: u8,
+    pub nickname: String,
     pub penta_kills: u16,
+    pub quadro_kills: u16,
+    pub triple_kills: u16,
+    pub win_rate: u8,
+    pub wins: u8,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -110,7 +107,7 @@ pub struct MatchStats {
     #[serde(rename = "Headshots")]
     pub headshots: String,
     #[serde(rename = "Headshots %")]
-    pub headshots_percentage: String,
+    pub headshot_percentage: String,
     #[serde(rename = "K/D Ratio")]
     pub kd_ratio: String,
     #[serde(rename = "K/R Ratio")]
@@ -238,7 +235,7 @@ pub fn from_api(
                 None => (0, 0),
             };
 
-            let account_created_timestamp = match DateTime::parse_from_rfc3339(&d.activated_at) {
+            let account_created = match DateTime::parse_from_rfc3339(&d.activated_at) {
                 Ok(parsed_date) => parsed_date.timestamp(),
                 Err(_) => 0, // Default to 0 if parsing fails
             };
@@ -254,7 +251,7 @@ pub fn from_api(
                 kd_ratio,
                 kr_ratio,
                 headshots,
-                headshots_percentage,
+                headshot_percentage,
                 double_kills,
                 triple_kills,
                 quadro_kills,
@@ -329,9 +326,9 @@ pub fn from_api(
                     0.0
                 };
                 let win_rate = if (total_wins + total_losses) > 0 {
-                    (total_wins as f32 / (total_wins + total_losses) as f32) * 100.0
+                    ((total_wins as f32 / (total_wins + total_losses) as f32) * 100.0).round() as u8
                 } else {
-                    0.0
+                    0 as u8
                 };
                 let kd_ratio = if total_deaths > 0 {
                     total_kills as f32 / total_deaths as f32
@@ -343,7 +340,7 @@ pub fn from_api(
                 } else {
                     0.0
                 };
-                let headshots_percentage = if total_kills > 0 {
+                let headshot_percentage = if total_kills > 0 {
                     (total_headshots as f32 / total_kills as f32) * 100.0
                 } else {
                     0.0
@@ -359,7 +356,7 @@ pub fn from_api(
                     kd_ratio,
                     avg_kr_ratio,
                     total_headshots,
-                    headshots_percentage,
+                    headshot_percentage,
                     total_double_kills,
                     total_triple_kills,
                     total_quadro_kills,
@@ -367,30 +364,30 @@ pub fn from_api(
                 )
             } else {
                 // Default values when no match data is available
-                (0.0, 0, 0, 0.0, 0, 0, 0.0, 0.0, 0, 0.0, 0, 0, 0, 0)
+                (0.0, 0, 0, 0, 0, 0, 0.0, 0.0, 0, 0.0, 0, 0, 0, 0)
             };
 
             Some(FaceitData {
-                nickname: d.nickname,
-                account_created: account_created_timestamp,
+                account_created,
+                adr,
                 avatar: d.avatar,
                 country: d.country,
-                level,
-                elo,
-                adr,
-                wins,
-                losses,
-                win_rate,
-                kills,
                 deaths,
-                kd_ratio,
-                kr_ratio,
-                headshots,
-                headshots_percentage,
                 double_kills,
-                triple_kills,
-                quadro_kills,
+                elo,
+                headshots,
+                headshot_percentage,
+                kd_ratio,
+                kills,
+                kr_ratio,
+                level,
+                losses,
+                nickname: d.nickname,
                 penta_kills,
+                quadro_kills,
+                triple_kills,
+                win_rate,
+                wins,
             })
         }
         _ => None,
