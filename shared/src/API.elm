@@ -1,6 +1,6 @@
 module API exposing (FaceitData, Response, Site, assetUrl, baseUrl, playerUrl, responseDecoder, responseEncoder, siteDecoder, siteEncoder, sitesDecoder)
 
-import Json.Decode exposing (Decoder, field)
+import Json.Decode exposing (Decoder, andThen, field, map, succeed)
 import Json.Encode
 import Json.Encode.Extra
 
@@ -17,11 +17,26 @@ type alias Response =
 
 
 type alias FaceitData =
-    { nickname : String
+    { account_created : Int
+    , adr : Float
     , avatar : String
     , country : String
+    , deaths : Int
+    , double_kills : Int
     , elo : Int
+    , headshots : Int
+    , headshot_percentage : Float
+    , kd_ratio : Float
+    , kills : Int
+    , kr_ratio : Float
     , level : Int
+    , losses : Int
+    , nickname : String
+    , penta_kills : Int
+    , quadro_kills : Int
+    , triple_kills : Int
+    , win_rate : Int
+    , wins : Int
     }
 
 
@@ -89,20 +104,55 @@ faceitDecoder =
 
 faceitDataDecoder : Decoder FaceitData
 faceitDataDecoder =
-    Json.Decode.map5 FaceitData
-        (field "nickname" Json.Decode.string)
-        (field "avatar" Json.Decode.string)
-        (field "country" Json.Decode.string)
-        (field "elo" Json.Decode.int)
-        (field "level" Json.Decode.int)
+    succeed FaceitData
+        |> decodeApply (field "account_created" Json.Decode.int)
+        |> decodeApply (field "adr" Json.Decode.float)
+        |> decodeApply (field "avatar" Json.Decode.string)
+        |> decodeApply (field "country" Json.Decode.string)
+        |> decodeApply (field "deaths" Json.Decode.int)
+        |> decodeApply (field "double_kills" Json.Decode.int)
+        |> decodeApply (field "elo" Json.Decode.int)
+        |> decodeApply (field "headshots" Json.Decode.int)
+        |> decodeApply (field "headshot_percentage" Json.Decode.float)
+        |> decodeApply (field "kd_ratio" Json.Decode.float)
+        |> decodeApply (field "kills" Json.Decode.int)
+        |> decodeApply (field "kr_ratio" Json.Decode.float)
+        |> decodeApply (field "level" Json.Decode.int)
+        |> decodeApply (field "losses" Json.Decode.int)
+        |> decodeApply (field "nickname" Json.Decode.string)
+        |> decodeApply (field "penta_kills" Json.Decode.int)
+        |> decodeApply (field "quadro_kills" Json.Decode.int)
+        |> decodeApply (field "triple_kills" Json.Decode.int)
+        |> decodeApply (field "win_rate" Json.Decode.int)
+        |> decodeApply (field "wins" Json.Decode.int)
 
 
 faceitDataEncoder : FaceitData -> Json.Encode.Value
 faceitDataEncoder faceitData =
     Json.Encode.object
-        [ ( "nickname", Json.Encode.string faceitData.nickname )
+        [ ( "account_created", Json.Encode.int faceitData.account_created )
+        , ( "adr", Json.Encode.float faceitData.adr )
         , ( "avatar", Json.Encode.string faceitData.avatar )
         , ( "country", Json.Encode.string faceitData.country )
+        , ( "deaths", Json.Encode.int faceitData.deaths )
+        , ( "double_kills", Json.Encode.int faceitData.double_kills )
         , ( "elo", Json.Encode.int faceitData.elo )
+        , ( "headshots", Json.Encode.int faceitData.headshots )
+        , ( "headshot_percentage", Json.Encode.float faceitData.headshot_percentage )
+        , ( "kd_ratio", Json.Encode.float faceitData.kd_ratio )
+        , ( "kills", Json.Encode.int faceitData.kills )
+        , ( "kr_ratio", Json.Encode.float faceitData.kr_ratio )
         , ( "level", Json.Encode.int faceitData.level )
+        , ( "losses", Json.Encode.int faceitData.losses )
+        , ( "nickname", Json.Encode.string faceitData.nickname )
+        , ( "penta_kills", Json.Encode.int faceitData.penta_kills )
+        , ( "quadro_kills", Json.Encode.int faceitData.quadro_kills )
+        , ( "triple_kills", Json.Encode.int faceitData.triple_kills )
+        , ( "win_rate", Json.Encode.int faceitData.win_rate )
+        , ( "wins", Json.Encode.int faceitData.wins )
         ]
+
+
+decodeApply : Decoder a -> Decoder (a -> b) -> Decoder b
+decodeApply value partial =
+    andThen (\p -> map p value) partial

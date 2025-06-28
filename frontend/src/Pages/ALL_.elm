@@ -12,6 +12,7 @@ import RemoteData exposing (RemoteData)
 import Route exposing (Route)
 import Route.Path as Path
 import Shared
+import Time exposing (millisToPosix, toDay, toMonth, toYear, utc)
 import Url exposing (percentEncode)
 import View exposing (View)
 
@@ -296,10 +297,7 @@ faceitComponent faceitData =
                     [ style "display" "flex", style "gap" "8px", style "align-items" "center" ]
                     [ Html.img [ Html.Attributes.alt <| "Country: " ++ String.toUpper data.country, Html.Attributes.src ("https://flagsapi.com/" ++ String.toUpper data.country ++ "/flat/24.png") ] []
                     , Html.p [] [ Html.text data.nickname ]
-                    ]
-                , Html.div
-                    [ style "display" "flex", style "align-items" "center", style "gap" "10px" ]
-                    [ Html.img
+                    , Html.img
                         [ Html.Attributes.src (API.assetUrl ++ "/icons/faceit/level" ++ String.fromInt data.level ++ ".svg")
                         , Html.Attributes.alt "Faceit Level"
                         , style "width" "30px"
@@ -308,7 +306,103 @@ faceitComponent faceitData =
                         []
                     , Html.p [] [ Html.text <| String.fromInt data.elo ]
                     ]
+                , Html.div
+                    [ style "display" "flex", style "align-items" "center", style "gap" "10px" ]
+                    []
+                , Html.div
+                    [ style "display" "flex"
+                    , style "align-items" "center"
+                    , style "justify-content" "center"
+                    , style "gap" "10px"
+                    ]
+                    [ truncate data.adr |> String.fromInt |> faceitProperty "ADR"
+                    , formatFloat data.kd_ratio |> faceitProperty "K/D"
+                    , formatFloat data.kr_ratio |> faceitProperty "K/R"
+                    , data.win_rate |> String.fromInt |> faceitProperty "Win%"
+                    , truncate data.headshot_percentage |> String.fromInt |> faceitProperty "HS%"
+                    ]
+                , Html.div
+                    [ style "display" "flex"
+                    , style "align-items" "center"
+                    , style "justify-content" "center"
+                    , style "gap" "10px"
+                    ]
+                    [ faceitProperty "Account Created" (getAccountCreationDate data.account_created)
+                    ]
                 ]
+
+
+getAccountCreationDate : Int -> String
+getAccountCreationDate timestamp =
+    let
+        posixTime =
+            timestamp
+                * 1000
+                |> millisToPosix
+
+        year =
+            toYear utc posixTime
+
+        month =
+            toMonth utc posixTime
+
+        day =
+            toDay utc posixTime
+    in
+    String.fromInt day ++ " " ++ monthToString month ++ " " ++ String.fromInt year
+
+
+monthToString : Time.Month -> String
+monthToString month =
+    case month of
+        Time.Jan ->
+            "January"
+
+        Time.Feb ->
+            "February"
+
+        Time.Mar ->
+            "March"
+
+        Time.Apr ->
+            "April"
+
+        Time.May ->
+            "May"
+
+        Time.Jun ->
+            "June"
+
+        Time.Jul ->
+            "July"
+
+        Time.Aug ->
+            "August"
+
+        Time.Sep ->
+            "September"
+
+        Time.Oct ->
+            "October"
+
+        Time.Nov ->
+            "November"
+
+        Time.Dec ->
+            "December"
+
+
+formatFloat : Float -> String
+formatFloat value =
+    String.fromFloat <| (value * 100 |> round |> toFloat) / 100
+
+
+faceitProperty : String -> String -> Html msg
+faceitProperty property value =
+    Html.p
+        []
+        [ Html.text <| property ++ ": " ++ value
+        ]
 
 
 errorToString : Http.Error -> String
