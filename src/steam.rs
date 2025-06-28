@@ -66,3 +66,32 @@ pub fn normalize_url(url: &str) -> Result<String, String> {
 
     Err("Invalid URL format".to_string())
 }
+
+/// Fetch CS2 hours for a given Steam ID
+/// Returns the number of hours played in CS2, or None if not found/error
+pub async fn get_cs2_hours(steam_id: &str) -> Option<u32> {
+    let api_url = format!(
+        "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key={}&steamid={}&include_appinfo=1&include_played_free_games=1",
+        env::get("STEAM_API_KEY"),
+        steam_id
+    );
+    
+    let response = reqwest::get(&api_url).await.ok()?;
+    let json: serde_json::Value = response.json().await.ok()?;
+    
+    // CS2's app ID is 730
+    if let Some(games) = json["response"]["games"].as_array() {
+        for game in games {
+            if let Some(app_id) = game["appid"].as_u64() {
+                if app_id == 730 {
+                    // Convert minutes to hours (playtime_forever is in minutes)
+                    if let Some(minutes) = game["playtime_forever"].as_u64() {
+                        return Some((minutes / 60) as u32);
+                    }
+                }
+            }
+        }
+    }
+    
+    None
+}
