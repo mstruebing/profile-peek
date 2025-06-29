@@ -169,11 +169,13 @@ async fn old_player_route(url: &str) -> Result<String, String> {
 async fn handle_new_player(steam_id: &str, url: &str) -> String {
     let faceit_data = faceit::get_player_details(steam_id).await;
 
-    // Only get last matches if we have valid faceit data
-    let last_matches = if let Some(ref player_details) = faceit_data {
-        faceit::get_player_last_matches(&player_details.player_id).await
+    // Only get last matches, total matches, and bans if we have valid faceit data
+    let (last_matches, bans) = if let Some(ref player_details) = faceit_data {
+        let last_matches = faceit::get_player_last_matches(&player_details.player_id).await;
+        let bans = faceit::get_player_bans(&player_details.player_id).await;
+        (last_matches, bans)
     } else {
-        None
+        (None, None)
     };
 
     // Fetch CS2 hours, account creation date, and VAC ban info
@@ -188,6 +190,7 @@ async fn handle_new_player(steam_id: &str, url: &str) -> String {
         cs2_hours,
         steam_account_created,
         vac_ban_info,
+        bans,
     );
     match serde_json::to_string(&player) {
         Ok(json) => {
@@ -210,6 +213,7 @@ fn create_player(
     cs2_hours: Option<u32>,
     account_created: Option<i64>,
     vac_ban_info: Option<VacBanInfo>,
+    bans: Option<Vec<faceit::FaceitBan>>,
 ) -> Player {
     let mut sites = vec![
         Site {
@@ -238,7 +242,7 @@ fn create_player(
 
     Player {
         steam_id: steam_id.to_string(),
-        faceit_data: faceit::from_api(faceit_data, last_matches),
+        faceit_data: faceit::from_api(faceit_data, last_matches, bans),
         cs2_hours,
         account_created,
         vac_ban_info,

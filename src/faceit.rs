@@ -9,6 +9,7 @@ pub struct FaceitData {
     pub account_created: i64,
     pub adr: f32,
     pub avatar: Option<String>,
+    pub bans: Vec<FaceitBan>,
     pub country: String,
     pub deaths: u16,
     pub double_kills: u16,
@@ -80,7 +81,7 @@ pub struct Settings {
     pub language: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct MatchStats {
     #[serde(rename = "ADR")]
     pub adr: String,
@@ -154,12 +155,12 @@ pub struct MatchStats {
     pub winner: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct MatchItem {
     pub stats: MatchStats,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct PlayerLastMatchesResponse {
     pub start: u64,
     pub end: u64,
@@ -227,6 +228,7 @@ pub async fn get_player_last_matches(player_id: &str) -> Option<PlayerLastMatche
 pub fn from_api(
     data: Option<FaceitPlayerDetailsAPIResponse>,
     last_matches: Option<PlayerLastMatchesResponse>,
+    bans: Option<Vec<FaceitBan>>,
 ) -> Option<FaceitData> {
     match data {
         Some(d) => {
@@ -371,6 +373,7 @@ pub fn from_api(
                 account_created,
                 adr,
                 avatar: d.avatar,
+                bans: bans.unwrap_or_default(),
                 country: d.country,
                 deaths,
                 double_kills,
@@ -391,5 +394,46 @@ pub fn from_api(
             })
         }
         _ => None,
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FaceitBan {
+    pub nickname: String,
+    #[serde(rename = "type")]
+    pub type_field: String,
+    pub reason: String,
+    pub starts_at: String,
+    pub user_id: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct FaceitBansResponse {
+    pub items: Vec<FaceitBan>,
+}
+
+pub async fn get_player_bans(player_id: &str) -> Option<Vec<FaceitBan>> {
+    let api_url = format!("https://open.faceit.com/data/v4/players/{}/bans", player_id);
+
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        AUTHORIZATION,
+        HeaderValue::from_str(&format!("Bearer {}", env::get("FACEIT_API_KEY"))).ok()?,
+    );
+
+    let client = reqwest::Client::new();
+
+    match client.get(&api_url).headers(headers).send().await {
+        Ok(response) => {
+            if response.status().is_success() {
+                match response.json::<FaceitBansResponse>().await {
+                    Ok(data) => Some(data.items),
+                    Err(_) => None,
+                }
+            } else {
+                None
+            }
+        }
+        Err(_) => None,
     }
 }
