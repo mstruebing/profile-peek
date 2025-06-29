@@ -9,10 +9,28 @@ type alias Site =
     { title : String, url : String }
 
 
+type alias VacBanInfo =
+    { isBanned : Bool
+    , banCount : Int
+    , daysSinceLastBan : Maybe Int
+    }
+
+
+type alias FaceitBan =
+    { nickname : String
+    , type_ : String
+    , reason : String
+    , startsAt : String
+    , userId : String
+    }
+
+
 type alias Response =
     { steam_id : String
     , sites : List Site
     , faceitData : Maybe FaceitData
+    , cs2Hours : Maybe Int
+    , vacBanInfo : Maybe VacBanInfo
     }
 
 
@@ -37,6 +55,7 @@ type alias FaceitData =
     , triple_kills : Int
     , win_rate : Int
     , wins : Int
+    , bans : List FaceitBan
     }
 
 
@@ -62,10 +81,12 @@ assetUrl =
 
 responseDecoder : Decoder Response
 responseDecoder =
-    Json.Decode.map3 Response
+    Json.Decode.map5 Response
         (field "steam_id" Json.Decode.string)
         sitesDecoder
         faceitDecoder
+        (field "cs2_hours" (Json.Decode.maybe Json.Decode.int))
+        (field "vac_ban_info" (Json.Decode.maybe vacBanInfoDecoder))
 
 
 sitesDecoder : Decoder (List Site)
@@ -86,6 +107,8 @@ responseEncoder response =
         [ ( "steam_id", Json.Encode.string response.steam_id )
         , ( "sites", Json.Encode.list siteEncoder response.sites )
         , ( "faceit_data", Json.Encode.Extra.maybe faceitDataEncoder response.faceitData )
+        , ( "cs2_hours", Json.Encode.Extra.maybe Json.Encode.int response.cs2Hours )
+        , ( "vac_ban_info", Json.Encode.Extra.maybe vacBanInfoEncoder response.vacBanInfo )
         ]
 
 
@@ -125,6 +148,15 @@ faceitDataDecoder =
         |> decodeApply (field "triple_kills" Json.Decode.int)
         |> decodeApply (field "win_rate" Json.Decode.int)
         |> decodeApply (field "wins" Json.Decode.int)
+        |> decodeApply (field "bans" (Json.Decode.list faceitBanDecoder))
+
+
+vacBanInfoDecoder : Decoder VacBanInfo
+vacBanInfoDecoder =
+    Json.Decode.map3 VacBanInfo
+        (field "is_banned" Json.Decode.bool)
+        (field "ban_count" Json.Decode.int)
+        (field "days_since_last_ban" (Json.Decode.maybe Json.Decode.int))
 
 
 faceitDataEncoder : FaceitData -> Json.Encode.Value
@@ -150,6 +182,37 @@ faceitDataEncoder faceitData =
         , ( "triple_kills", Json.Encode.int faceitData.triple_kills )
         , ( "win_rate", Json.Encode.int faceitData.win_rate )
         , ( "wins", Json.Encode.int faceitData.wins )
+        , ( "bans", Json.Encode.list faceitBanEncoder faceitData.bans )
+        ]
+
+
+vacBanInfoEncoder : VacBanInfo -> Json.Encode.Value
+vacBanInfoEncoder vacBanInfo =
+    Json.Encode.object
+        [ ( "is_banned", Json.Encode.bool vacBanInfo.isBanned )
+        , ( "ban_count", Json.Encode.int vacBanInfo.banCount )
+        , ( "days_since_last_ban", Json.Encode.Extra.maybe Json.Encode.int vacBanInfo.daysSinceLastBan )
+        ]
+
+
+faceitBanDecoder : Decoder FaceitBan
+faceitBanDecoder =
+    Json.Decode.map5 FaceitBan
+        (field "nickname" Json.Decode.string)
+        (field "type" Json.Decode.string)
+        (field "reason" Json.Decode.string)
+        (field "starts_at" Json.Decode.string)
+        (field "user_id" Json.Decode.string)
+
+
+faceitBanEncoder : FaceitBan -> Json.Encode.Value
+faceitBanEncoder ban =
+    Json.Encode.object
+        [ ( "nickname", Json.Encode.string ban.nickname )
+        , ( "type", Json.Encode.string ban.type_ )
+        , ( "reason", Json.Encode.string ban.reason )
+        , ( "starts_at", Json.Encode.string ban.startsAt )
+        , ( "user_id", Json.Encode.string ban.userId )
         ]
 
 
