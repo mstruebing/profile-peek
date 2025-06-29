@@ -77,6 +77,8 @@ type IconType
     | X
     | Mail
     | Extension
+    | Error
+    | Checkmark
     | Faceit
     | Level1
     | Level2
@@ -135,6 +137,12 @@ iconMapping iconType =
         Extension ->
             API.assetUrl ++ "/icons/extension.svg"
 
+        Error ->
+            API.assetUrl ++ "/icons/error.svg"
+
+        Checkmark ->
+            API.assetUrl ++ "/icons/checkmark.svg"
+
         Faceit ->
             API.assetUrl ++ "/icons/faceit.svg"
 
@@ -186,6 +194,12 @@ stringToIconType str =
 
         "Faceitfinder" ->
             Just Faceitfinder
+
+        "Error" ->
+            Just Error
+
+        "Checkmark" ->
+            Just Checkmark
 
         "Faceit" ->
             Just Faceit
@@ -251,6 +265,12 @@ iconTypeToString iconType =
         Extension ->
             "Extension"
 
+        Error ->
+            "Error"
+
+        Checkmark ->
+            "Checkmark"
+
         Faceit ->
             "Faceit"
 
@@ -300,14 +320,14 @@ footer : Html msg
 footer =
     Html.footer
         [ style "background-color" "rgb(34, 32, 32)"
-        , style "width" "100%"
-        , style "position" "fixed"
-        , style "bottom" "0"
+        , style "width" "calc(100% - 40px)"
         , style "display" "flex"
         , style "align-items" "center"
         , style "justify-content" "center"
         , style "padding" "20px"
         , style "gap" "10px"
+        , style "margin-top" "20px"
+        , style "border-top" "1px dashed grey"
         ]
         [ link "https://chromewebstore.google.com/detail/profile-peek/fbpcaneckpeeinnachahnnpapdiaohei" <| icon (Just Extension) 30 30
         , link "https://steamcommunity.com/groups/profile-peek" <| icon (Just Steam) 20 20

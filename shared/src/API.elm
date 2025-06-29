@@ -1,4 +1,4 @@
-module API exposing (FaceitData, Response, Site, assetUrl, baseUrl, playerUrl, responseDecoder, responseEncoder, siteDecoder, siteEncoder, sitesDecoder)
+module API exposing (FaceitBan, FaceitData, Response, Site, VacBanInfo, assetUrl, baseUrl, playerUrl, responseDecoder, responseEncoder, siteDecoder, siteEncoder, sitesDecoder)
 
 import Json.Decode exposing (Decoder, andThen, field, map, succeed)
 import Json.Encode
@@ -20,7 +20,7 @@ type alias FaceitBan =
     { nickname : String
     , type_ : String
     , reason : String
-    , startsAt : String
+    , startsAt : Int
     , userId : String
     }
 
@@ -30,6 +30,7 @@ type alias Response =
     , sites : List Site
     , faceitData : Maybe FaceitData
     , cs2Hours : Maybe Int
+    , accountCreated : Maybe Int
     , vacBanInfo : Maybe VacBanInfo
     }
 
@@ -81,11 +82,12 @@ assetUrl =
 
 responseDecoder : Decoder Response
 responseDecoder =
-    Json.Decode.map5 Response
+    Json.Decode.map6 Response
         (field "steam_id" Json.Decode.string)
         sitesDecoder
         faceitDecoder
         (field "cs2_hours" (Json.Decode.maybe Json.Decode.int))
+        (field "account_created" (Json.Decode.maybe Json.Decode.int))
         (field "vac_ban_info" (Json.Decode.maybe vacBanInfoDecoder))
 
 
@@ -109,6 +111,7 @@ responseEncoder response =
         , ( "faceit_data", Json.Encode.Extra.maybe faceitDataEncoder response.faceitData )
         , ( "cs2_hours", Json.Encode.Extra.maybe Json.Encode.int response.cs2Hours )
         , ( "vac_ban_info", Json.Encode.Extra.maybe vacBanInfoEncoder response.vacBanInfo )
+        , ( "account_created", Json.Encode.Extra.maybe Json.Encode.int response.accountCreated )
         ]
 
 
@@ -201,7 +204,7 @@ faceitBanDecoder =
         (field "nickname" Json.Decode.string)
         (field "type" Json.Decode.string)
         (field "reason" Json.Decode.string)
-        (field "starts_at" Json.Decode.string)
+        (field "starts_at" Json.Decode.int)
         (field "user_id" Json.Decode.string)
 
 
@@ -211,7 +214,7 @@ faceitBanEncoder ban =
         [ ( "nickname", Json.Encode.string ban.nickname )
         , ( "type", Json.Encode.string ban.type_ )
         , ( "reason", Json.Encode.string ban.reason )
-        , ( "starts_at", Json.Encode.string ban.startsAt )
+        , ( "starts_at", Json.Encode.int ban.startsAt )
         , ( "user_id", Json.Encode.string ban.userId )
         ]
 
