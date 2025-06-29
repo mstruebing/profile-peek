@@ -73,6 +73,7 @@ type IconType
     | Leetify
     | CsStats
     | ProfilePeek
+    | Faceitfinder
     | X
     | Mail
     | Extension
@@ -121,6 +122,9 @@ iconMapping iconType =
 
         ProfilePeek ->
             API.assetUrl ++ "/icons/logo-button.svg"
+
+        Faceitfinder ->
+            API.assetUrl ++ "/icons/faceitfinder.svg"
 
         X ->
             API.assetUrl ++ "/icons/x.svg"
@@ -180,6 +184,9 @@ stringToIconType str =
         "ProfilePeek" ->
             Just ProfilePeek
 
+        "Faceitfinder" ->
+            Just Faceitfinder
+
         "Faceit" ->
             Just Faceit
 
@@ -231,6 +238,9 @@ iconTypeToString iconType =
 
         ProfilePeek ->
             "ProfilePeek"
+
+        Faceitfinder ->
+            "Faceitfinder"
 
         X ->
             "X"

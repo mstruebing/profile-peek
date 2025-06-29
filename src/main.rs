@@ -217,16 +217,20 @@ fn create_player(
 ) -> Player {
     let mut sites = vec![
         Site {
-            url: format!("https://steamcommunity.com/profiles/{}", steam_id),
-            title: "Steam".to_string(),
-        },
-        Site {
             url: format!("https://leetify.com/app/profile/{}", steam_id),
             title: "Leetify".to_string(),
         },
         Site {
             url: format!("https://csstats.gg/player/{}", steam_id),
             title: "CsStats".to_string(),
+        },
+        Site {
+            url: format!("https://faceitfinder.com/profile/{}", steam_id),
+            title: "Faceitfinder".to_string(),
+        },
+        Site {
+            url: format!("https://steamcommunity.com/profiles/{}", steam_id),
+            title: "Steam".to_string(),
         },
     ];
 
