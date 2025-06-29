@@ -91,13 +91,14 @@ view : Model -> View Msg
 view model =
     { title = "Profile-Peek - Easy Access to Player Profiles Across Platforms"
     , body =
-        [ header
+        [ header model
         , Html.div
             [ Html.Attributes.id "wrapper"
             , style "display" "flex"
             , style "flex-direction" "column"
             , style "justify-content" "space-between"
             , style "gap" "50px"
+            , style "min-height" "48vh"
             , style "padding-top"
                 (if model.response == RemoteData.NotAsked then
                     "40vh"
@@ -113,14 +114,14 @@ view model =
                     "40vh"
                 )
             ]
-            [ searchBox model ]
+            []
         , footer
         ]
     }
 
 
-header : Html Msg
-header =
+header : Model -> Html Msg
+header model =
     Html.header
         [ style "background-color" "rgb(34, 32, 32)"
         , style "width" "100%"
@@ -132,6 +133,7 @@ header =
         , style "padding" "20px"
         ]
         [ Html.a [ Html.Attributes.href "/" ] [ Components.logo ]
+        , searchBox model
         , buyMeACoffee
         ]
 
@@ -143,6 +145,7 @@ searchBox model =
         , style "flex-direction" "column"
         , style "align-items" "center"
         , style "justify-content" "center"
+        , style "flex-grow" "1"
         ]
         [ Html.form
             [ onSubmit Submit
@@ -152,10 +155,11 @@ searchBox model =
                 [ style "display" "flex"
                 , style "align-items" "center"
                 , style "justify-content" "center"
-                , style "flex-direction" "column"
-                , style "gap" "10px"
+                , style "flex-direction" "row"
                 , style "width" "90%"
                 , style "margin" "0 auto"
+                , style "margin-left" "112px"
+                , style "transform" "translateY(30vh)"
                 ]
                 [ Html.input
                     [ placeholder "Enter the Steam Profile URL"
@@ -173,17 +177,16 @@ searchBox model =
                     , style "background-color" "white"
                     ]
                     []
-                , Html.div [ style "height" "45px" ]
+                , Html.div [ style "transform" "translateX(-112px)" ]
                     [ Html.button
                         [ disabled <|
                             String.isEmpty model.input
                                 || (model.response == RemoteData.Loading)
                         , style "background-color" "#123"
-                        , style "margin" "5px"
+                        , style "cursor" "pointer"
+                        , style "border" "none"
                         , style "color" "white"
                         , style "border-radius" "22px"
-                        , style "border-style" "solid"
-                        , style "border-color" "white"
                         , style "padding" "0 0 0 6px"
                         , Html.Attributes.id "submit-button"
                         ]
@@ -194,7 +197,7 @@ searchBox model =
                             , style "gap" "10px"
                             ]
                             [ Html.text "Search"
-                            , Components.icon (Just Components.ProfilePeek) 40 40
+                            , Components.icon (Just Components.ProfilePeek) 54 54
                             ]
                         ]
                     ]

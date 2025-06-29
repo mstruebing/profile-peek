@@ -1,7 +1,7 @@
 module Pages.ALL_ exposing (Model, Msg, page)
 
 import API exposing (Response, Site, responseDecoder)
-import Components exposing (footer)
+import Components exposing (IconType(..), footer)
 import Effect exposing (Effect)
 import Html exposing (Html)
 import Html.Attributes exposing (autofocus, disabled, placeholder, style, value)
@@ -112,36 +112,24 @@ view : Model -> View Msg
 view model =
     { title = "Profile-Peek - Easy Access to Player Profiles Across Platforms"
     , body =
-        [ header
+        [ header model
         , Html.div
             [ Html.Attributes.id "wrapper"
             , style "display" "flex"
             , style "flex-direction" "column"
             , style "justify-content" "space-between"
             , style "gap" "50px"
-            , style "padding-top"
-                (if model.response == RemoteData.NotAsked then
-                    "40vh"
-
-                 else
-                    "20vh"
-                )
-            , style "height"
-                (if model.response == RemoteData.NotAsked then
-                    "auto"
-
-                 else
-                    "40vh"
-                )
+            , style "margin-top" "150px"
+            , style "min-height" "70vh"
             ]
-            [ searchBox model, searchResults model ]
+            [ searchResults model ]
         , footer
         ]
     }
 
 
-header : Html Msg
-header =
+header : Model -> Html Msg
+header model =
     Html.header
         [ style "background-color" "rgb(34, 32, 32)"
         , style "width" "100%"
@@ -153,6 +141,7 @@ header =
         , style "padding" "20px"
         ]
         [ Html.a [ Html.Attributes.href "/" ] [ Components.logo ]
+        , searchBox model
         , buyMeACoffee
         ]
 
@@ -164,6 +153,7 @@ searchBox model =
         , style "flex-direction" "column"
         , style "align-items" "center"
         , style "justify-content" "center"
+        , style "flex-grow" "1"
         ]
         [ Html.form
             [ onSubmit Submit
@@ -173,10 +163,10 @@ searchBox model =
                 [ style "display" "flex"
                 , style "align-items" "center"
                 , style "justify-content" "center"
-                , style "flex-direction" "column"
-                , style "gap" "10px"
+                , style "flex-direction" "row"
                 , style "width" "90%"
                 , style "margin" "0 auto"
+                , style "margin-left" "112px"
                 ]
                 [ Html.input
                     [ placeholder "Enter the Steam Profile URL"
@@ -194,17 +184,16 @@ searchBox model =
                     , style "background-color" "white"
                     ]
                     []
-                , Html.div [ style "height" "45px" ]
+                , Html.div [ style "transform" "translateX(-112px)" ]
                     [ Html.button
                         [ disabled <|
                             String.isEmpty model.input
                                 || (model.response == RemoteData.Loading)
                         , style "background-color" "#123"
-                        , style "margin" "5px"
+                        , style "cursor" "pointer"
+                        , style "border" "none"
                         , style "color" "white"
                         , style "border-radius" "22px"
-                        , style "border-style" "solid"
-                        , style "border-color" "white"
                         , style "padding" "0 0 0 6px"
                         , Html.Attributes.id "submit-button"
                         ]
@@ -215,7 +204,7 @@ searchBox model =
                             , style "gap" "10px"
                             ]
                             [ Html.text "Search"
-                            , Components.icon (Just Components.ProfilePeek) 40 40
+                            , Components.icon (Just Components.ProfilePeek) 54 54
                             ]
                         ]
                     ]
@@ -241,7 +230,28 @@ searchResults model =
                 , style "justify-content" "center"
                 , style "gap" "20px"
                 ]
-                [ faceitComponent response.faceitData
+                [ faceitProfile response.faceitData
+                , cs2Hours response.cs2Hours
+                , faceitStats response.faceitData
+                , accountCreation response.accountCreated response.faceitData
+                , Html.div
+                    [ style "display" "flex"
+                    , style "flex-direction" "column"
+                    , style "gap" "5px"
+                    , style "align-items" "center"
+                    , style "justify-content" "center"
+                    ]
+                    [ Html.p [ style "text-decoration" "underline" ] [ Html.text "Bans:" ]
+                    , vacBanInfo response.vacBanInfo
+                    , faceitBanInfo
+                        (case response.faceitData of
+                            Just data ->
+                                data.bans
+
+                            Nothing ->
+                                []
+                        )
+                    ]
                 , Html.hr [ style "width" "400px", style "border" "1px solid #ccc" ] []
                 , linkList response.sites
                 ]
@@ -266,8 +276,91 @@ linkList sites =
         )
 
 
-faceitComponent : Maybe API.FaceitData -> Html msg
-faceitComponent faceitData =
+vacBanInfo : Maybe API.VacBanInfo -> Html msg
+vacBanInfo maybeVacBanInfo =
+    case maybeVacBanInfo of
+        Nothing ->
+            Html.text ""
+
+        Just info ->
+            Html.div
+                [ style "display" "flex", style "flex-direction" "column", style "align-items" "center", style "justify-content" "center", style "gap" "5px" ]
+                [ Html.div
+                    [ style "display" "flex", style "align-items" "center", style "justify-content" "center", style "gap" "10px" ]
+                    [ Html.p []
+                        [ Html.text "Vac: " ]
+                    , if not info.isBanned then
+                        Components.icon (Just Checkmark) 20 20
+
+                      else
+                        Components.icon (Just Error) 20 20
+                    ]
+                , if info.isBanned then
+                    Html.p []
+                        [ Html.text <|
+                            String.fromInt info.banCount
+                                ++ " ban(s)"
+                                ++ (case info.daysSinceLastBan of
+                                        Just days ->
+                                            " (" ++ String.fromInt days ++ " days since last ban)"
+
+                                        Nothing ->
+                                            ""
+                                   )
+                        ]
+
+                  else
+                    Html.text ""
+                ]
+
+
+faceitBanInfo : List API.FaceitBan -> Html Msg
+faceitBanInfo bans =
+    if List.isEmpty bans then
+        Html.div
+            [ style "display" "flex", style "flex-direction" "column", style "align-items" "center", style "justify-content" "center", style "gap" "5px" ]
+            [ Html.div
+                [ style "display" "flex", style "align-items" "center", style "justify-content" "center", style "gap" "10px" ]
+                [ Html.p [] [ Html.text "Faceit: " ]
+                , Components.icon (Just Components.Checkmark) 20 20
+                ]
+            ]
+
+    else
+        Html.div
+            [ style "display" "flex", style "flex-direction" "column", style "align-items" "center", style "justify-content" "center", style "gap" "5px" ]
+            [ Html.div
+                [ style "display" "flex", style "align-items" "center", style "justify-content" "center", style "gap" "10px" ]
+                [ Html.p []
+                    [ Html.text "Faceit: " ]
+                , Components.icon (Just Components.Error) 20 20
+                ]
+            , Html.div [] (List.map (\x -> Html.p [] [ Html.text <| x.reason ++ ": " ++ getAccountCreationDate x.startsAt ]) bans)
+            ]
+
+
+cs2Hours : Maybe Int -> Html msg
+cs2Hours maybeHours =
+    case maybeHours of
+        Nothing ->
+            Html.p [] [ Html.text "CS2 Hours: private" ]
+
+        Just hours ->
+            Html.p []
+                [ Html.text
+                    ("CS2 Hours: "
+                        ++ (if hours == 0 then
+                                "private"
+
+                            else
+                                String.fromInt hours
+                           )
+                    )
+                ]
+
+
+faceitProfile : Maybe API.FaceitData -> Html msg
+faceitProfile faceitData =
     case faceitData of
         Nothing ->
             Html.p [] [ Html.text "No Faceit Data Found 🤔" ]
@@ -306,30 +399,66 @@ faceitComponent faceitData =
                         []
                     , Html.p [] [ Html.text <| String.fromInt data.elo ]
                     ]
-                , Html.div
-                    [ style "display" "flex", style "align-items" "center", style "gap" "10px" ]
-                    []
-                , Html.div
-                    [ style "display" "flex"
-                    , style "align-items" "center"
-                    , style "justify-content" "center"
-                    , style "gap" "10px"
-                    ]
-                    [ truncate data.adr |> String.fromInt |> faceitProperty "ADR"
-                    , formatFloat data.kd_ratio |> faceitProperty "K/D"
-                    , formatFloat data.kr_ratio |> faceitProperty "K/R"
-                    , data.win_rate |> String.fromInt |> faceitProperty "Win%"
-                    , truncate data.headshot_percentage |> String.fromInt |> faceitProperty "HS%"
-                    ]
+                ]
+
+
+faceitStats : Maybe API.FaceitData -> Html msg
+faceitStats faceitData =
+    case faceitData of
+        Nothing ->
+            Html.text ""
+
+        Just data ->
+            Html.div [ style "display" "flex", style "flex-direction" "column", style "align-items" "center", style "justify-content" "center", style "gap" "5px" ]
+                [ Html.p [ style "text-align" "center", style "text-decoration" "underline" ] [ Html.text "Last 20 matches avg:" ]
                 , Html.div
                     [ style "display" "flex"
                     , style "align-items" "center"
                     , style "justify-content" "center"
                     , style "gap" "10px"
                     ]
-                    [ faceitProperty "Account Created" (getAccountCreationDate data.account_created)
+                    [ truncate data.adr |> String.fromInt |> property "ADR"
+                    , formatFloat data.kd_ratio |> property "K/D"
+                    , formatFloat data.kr_ratio |> property "K/R"
+                    , data.win_rate |> String.fromInt |> property "Win%"
+                    , truncate data.headshot_percentage |> String.fromInt |> property "HS%"
                     ]
                 ]
+
+
+accountCreation : Maybe Int -> Maybe API.FaceitData -> Html msg
+accountCreation maybeSteamTimestamp maybeFaceitData =
+    Html.div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "align-items" "center"
+        , style "justify-content" "center"
+        , style "gap" "5px"
+        ]
+        [ Html.p [ style "text-decoration" "underline" ] [ Html.text "Account Creation:" ]
+        , Html.p []
+            [ Html.text <|
+                "Steam: "
+                    ++ (case maybeSteamTimestamp of
+                            Just timestamp ->
+                                getAccountCreationDate timestamp
+
+                            Nothing ->
+                                "Unknown"
+                       )
+            ]
+        , Html.p []
+            [ Html.text <|
+                "Faceit: "
+                    ++ (case maybeFaceitData of
+                            Just data ->
+                                getAccountCreationDate data.account_created
+
+                            Nothing ->
+                                "Unknown"
+                       )
+            ]
+        ]
 
 
 getAccountCreationDate : Int -> String
@@ -397,11 +526,11 @@ formatFloat value =
     String.fromFloat <| (value * 100 |> round |> toFloat) / 100
 
 
-faceitProperty : String -> String -> Html msg
-faceitProperty property value =
+property : String -> String -> Html msg
+property name value =
     Html.p
         []
-        [ Html.text <| property ++ ": " ++ value
+        [ Html.text <| name ++ ": " ++ value
         ]
 
 

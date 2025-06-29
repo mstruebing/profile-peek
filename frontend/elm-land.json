@@ -35,7 +35,7 @@
         { "rel": "icon", "type": "image/x-icon", "href": "https://profile-peek.com/assets/favicon.ico" },
         { "rel": "preload", "as": "image", "href": "https://profile-peek.com/assets/icons/logo.svg" },
         { "rel": "preconnect", "href": "https://cdn.buymeacoffee.com" },
-        { "rel": "preload", "as": "style", "onload": "this.rel = 'stylesheet'", "href": "https://profile-peek.com/assets/styles.css" }
+        { "rel": "preload", "as": "style", "onload": "this.rel = 'stylesheet'", "href": "https://profile-peek.com/assets/styles.css?v=1" }
       ],
       "script": [
           {

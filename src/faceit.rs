@@ -1,6 +1,6 @@
 use chrono::DateTime;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::env;
 
@@ -403,7 +403,8 @@ pub struct FaceitBan {
     #[serde(rename = "type")]
     pub type_field: String,
     pub reason: String,
-    pub starts_at: String,
+    #[serde(rename = "starts_at", deserialize_with = "parse_iso8601_to_timestamp")]
+    pub starts_at: i64,
     pub user_id: String,
 }
 
@@ -436,4 +437,14 @@ pub async fn get_player_bans(player_id: &str) -> Option<Vec<FaceitBan>> {
         }
         Err(_) => None,
     }
+}
+
+fn parse_iso8601_to_timestamp<'de, D>(deserializer: D) -> Result<i64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let iso8601_str: String = Deserialize::deserialize(deserializer)?;
+    DateTime::parse_from_rfc3339(&iso8601_str)
+        .map(|dt| dt.timestamp())
+        .map_err(serde::de::Error::custom)
 }
