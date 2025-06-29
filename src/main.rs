@@ -236,7 +236,7 @@ fn create_player(
 
     if let Some(data) = &faceit_data {
         sites.insert(
-            1,
+            0,
             Site {
                 url: data.faceit_url.replace("{lang}", "en"),
                 title: "Faceit".to_string(),
