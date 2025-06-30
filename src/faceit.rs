@@ -169,7 +169,7 @@ pub struct PlayerLastMatchesResponse {
 
 pub async fn get_player_details(steam_id: &str) -> Option<FaceitPlayerDetailsAPIResponse> {
     let api_url = format!(
-        "https://open.faceit.com/data/v4/players?game=csgo&game_player_id={}",
+        "https://open.faceit.com/data/v4/players?game=cs2&game_player_id={}",
         steam_id
     );
 
