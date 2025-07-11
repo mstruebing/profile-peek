@@ -19,17 +19,20 @@ build-extension:
 		cp assets/* dist/
 
 watch-extension: build-extension
-	while inotifywait -r extension/src shared/src -e modify; do { make build-extension; }; done
+	fswatch -r extension/src shared/src | while read; do make build-extension; done
 
 
 build-backend:
 	cargo build
 
 watch-frontend: build-frontend
-	while inotifywait -r frontend/src frontend/assets shared/src -e modify; do { make build-frontend; }; done
+	fswatch -r frontend/src frontend/assets shared/src | while read; do make build-frontend; done
 
 start-server:
 	cargo run
+
+watch-server:
+	cargo watch --watch src --exec run
 
 docker:
 	docker build -t mstruebing/profile-peek .
@@ -59,3 +62,7 @@ redis-stop:
 
 redis-client: 
 	docker exec -it redis-stack redis-cli
+
+
+open-redis-port:
+	ssh -L 6380:localhost:6379 -N -T box
